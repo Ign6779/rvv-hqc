@@ -6,7 +6,7 @@
 #ifndef HQC_HQC_H
 #define HQC_HQC_H
 
-#include <immintrin.h>
+// #include <immintrin.h>
 #include <stdint.h>
 #include "parameters.h"
 #include "parsing.h"
