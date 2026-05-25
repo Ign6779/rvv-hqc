@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 3.21)
-project(hqc-src C)
+project(hqc-src C ASM)
 
 # List of HQC parameter variants
 set(VARIANTS "hqc-1;hqc-3;hqc-5" CACHE INTERNAL "List of variants")
@@ -12,21 +12,32 @@ file(GLOB COMMON_SOURCES
 # 2) arch-common: shared across variants (top-level .c)
 if(HQC_ARCH STREQUAL "ref")
     set(ARCH_COMMON_DIR "${CMAKE_SOURCE_DIR}/src/ref")
-else()
+elseif(HQC_ARCH STREQUAL "x86_64")
     set(ARCH_COMMON_DIR "${CMAKE_SOURCE_DIR}/src/x86_64/common")
+#reusing top-level files for now
+elseif(HQC_ARCH STREQUAL "riscv")
+    set(ARCH_COMMON_DIR "${CMAKE_SOURCE_DIR}/src/riscv/common")
+else()
+    message(FATAL_ERROR "Unsupported HQC_ARCH: ${HQC_ARCH}")
 endif()
 file(GLOB ARCH_COMMON_TOP_SOURCES
         "${ARCH_COMMON_DIR}/*.c"
+        "${ARCH_COMMON_DIR}/*.S"
 )
 
 # 3) arch-specific implementation sources
 if(HQC_ARCH STREQUAL "ref")
     set(PLATFORM_DIR "${CMAKE_SOURCE_DIR}/src/ref")
-else()
+elseif(HQC_ARCH STREQUAL "x86_64")
     set(PLATFORM_DIR "${CMAKE_SOURCE_DIR}/src/x86_64/${HQC_X86_IMPL}")
+elseif(HQC_ARCH STREQUAL "riscv")
+    set(PLATFORM_DIR "${CMAKE_SOURCE_DIR}/src/riscv/${HQC_RISCV_IMPL}")
+else()
+    message(FATAL_ERROR "Unsupported HQC_ARCH: ${HQC_ARCH}")
 endif()
 file(GLOB PLATFORM_SOURCES
         "${PLATFORM_DIR}/*.c"
+        "${PLATFORM_DIR}/*.S"
 )
 
 # 4) build one static library per variant
@@ -35,15 +46,21 @@ foreach(var IN LISTS VARIANTS)
 
     if(HQC_ARCH STREQUAL "ref")
         set(VAR_DIR "${CMAKE_SOURCE_DIR}/src/ref/${var}")
-    else()
+    elseif(HQC_ARCH STREQUAL "x86_64")
         set(VAR_DIR "${CMAKE_SOURCE_DIR}/src/x86_64/${HQC_X86_IMPL}/${var}")
+    elseif(HQC_ARCH STREQUAL "riscv")
+        set(VAR_DIR "${CMAKE_SOURCE_DIR}/src/riscv/${HQC_RISCV_IMPL}/${var}")
+    else()
+        message(FATAL_ERROR "Unsupported HQC_ARCH: ${HQC_ARCH}")
     endif()
     file(GLOB VARIANT_SOURCES
             "${VAR_DIR}/*.c"
+            "${VAR_DIR}/*.S"
     )
 
     file(GLOB ARCH_COMMON_VARIANT_SOURCES
             "${ARCH_COMMON_DIR}/${var}/*.c"
+            "${ARCH_COMMON_DIR}/${var}/*.S"
     )
 
     add_library(${safe}_${HQC_ARCH} STATIC

@@ -4,10 +4,13 @@ project(hqc_unit_tests C CXX)
 enable_testing()
 
 if(NOT DEFINED HQC_ARCH)
-    message(FATAL_ERROR "HQC_ARCH must be set (ref or x86_64)")
+    message(FATAL_ERROR "HQC_ARCH must be set (ref, x86_64, or riscv)")
 endif()
 if(HQC_ARCH STREQUAL "x86_64" AND NOT DEFINED HQC_X86_IMPL)
     message(FATAL_ERROR "HQC_X86_IMPL must be set when HQC_ARCH=x86_64")
+endif()
+if(HQC_ARCH STREQUAL "riscv" AND NOT DEFINED HQC_RISCV_IMPL)
+    message(FATAL_ERROR "HQC_RISCV_IMPL must be set when HQC_ARCH=riscv")
 endif()
 if(NOT DEFINED VARIANTS)
     message(FATAL_ERROR "VARIANTS (e.g. \"hqc-1;hqc-3;hqc-5\") must be set by tests/CMakeLists.txt")
@@ -55,7 +58,7 @@ foreach(param_variant IN LISTS VARIANTS)
                 ${CMAKE_SOURCE_DIR}/src/ref
                 ${CMAKE_SOURCE_DIR}/src/ref/${param_variant}
         )
-    else()
+    elseif(HQC_ARCH STREQUAL "x86_64")
         set(lib_target    ${safe_param}_${HQC_ARCH})
         set(exe_name      test_unit_${safe_param}_${HQC_X86_IMPL})
 
@@ -64,6 +67,16 @@ foreach(param_variant IN LISTS VARIANTS)
                 ${CMAKE_SOURCE_DIR}/src/x86_64/common
                 ${CMAKE_SOURCE_DIR}/src/x86_64/common/${param_variant}
                 ${CMAKE_SOURCE_DIR}/src/x86_64/${HQC_X86_IMPL}
+        )
+    elseif(HQC_ARCH STREQUAL "riscv")
+        set(lib_target    ${safe_param}_${HQC_ARCH})
+        set(exe_name      test_unit_${safe_param}_${HQC_RISCV_IMPL})
+
+        set(PARAM_INCLUDES
+                ${CMAKE_SOURCE_DIR}/src/common/${param_variant}
+                ${CMAKE_SOURCE_DIR}/src/riscv/common
+                ${CMAKE_SOURCE_DIR}/src/riscv/common/${param_variant}
+                ${CMAKE_SOURCE_DIR}/src/riscv/${HQC_RISCV_IMPL}
         )
     endif()
 
@@ -86,9 +99,9 @@ foreach(param_variant IN LISTS VARIANTS)
     )
 
     target_compile_definitions(${exe_name} PRIVATE
-            $<$<STREQUAL:${HQC_ARCH},x86_64>:AVX2_MODE>
-            $<$<NOT:$<STREQUAL:${HQC_ARCH},x86_64>>:REF_MODE>
-            $<$<STREQUAL:${HQC_ARCH},x86_64>:HQC_X86_IMPL=${HQC_X86_IMPL}>
+            $<$<STREQUAL:${HQC_ARCH},ref>:REF_MODE>
+            $<$<AND:$<STREQUAL:${HQC_ARCH},x86_64>,$<STREQUAL:${HQC_X86_IMPL},avx256>>:AVX2_MODE>
+            $<$<AND:$<STREQUAL:${HQC_ARCH},riscv>,$<STREQUAL:${HQC_RISCV_IMPL},rvv>>:RVV_MODE>
     )
 
     target_include_directories(${exe_name} PRIVATE

@@ -3,7 +3,7 @@ include(CTest)
 
 # Must be passed in from top-level
 if(NOT DEFINED HQC_ARCH)
-    message(FATAL_ERROR "HQC_ARCH must be set (ref or x86_64)")
+    message(FATAL_ERROR "HQC_ARCH must be set (ref, x86_64, or riscv)")
 endif()
 
 # -------------------------

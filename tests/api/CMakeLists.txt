@@ -24,7 +24,9 @@ foreach(variant IN LISTS VARIANTS)
 
     target_compile_definitions(${exe} PRIVATE
             $<$<STREQUAL:${HQC_ARCH},x86_64>:AVX2_MODE>
-            $<$<NOT:$<STREQUAL:${HQC_ARCH},x86_64>>:REF_MODE>
+            $<$<STREQUAL:${HQC_ARCH},riscv>:RVV_MODE>
+            $<$<STREQUAL:${HQC_ARCH},ref>:REF_MODE>
+
     )
 
     target_include_directories(${exe} PRIVATE
