@@ -16,6 +16,15 @@
 #include <string.h>
 #include "parameters.h"
 
+#ifndef FAFFT_N_BITS
+#define FAFFT_N_BITS (2 * PARAM_N)
+#endif
+
+#ifndef FAFFT_N_WORDS
+#define FAFFT_N_WORDS CEIL_DIVIDE(FAFFT_N_BITS, 64)
+#endif
+
+
 static void fafft_mul(uint64_t *o, const uint64_t *a, const uint64_t *b) {
     (void)a;
     (void)b;
@@ -47,7 +56,7 @@ static void reduce_fafft(uint64_t *o, const uint64_t *a) {
  * @param[in]  a2  Operand polynomial b(x).
  */
 void vect_mul(uint64_t *o, const uint64_t *a1, const uint64_t *a2) {
-    uint64_t unreduced[FAFFT_N_WORDS];
+    uint64_t unreduced[FAFFT_N_WORDS] = {0}; //dont @ me
 
     fafft_mul(unreduced, a1, a2);
 
