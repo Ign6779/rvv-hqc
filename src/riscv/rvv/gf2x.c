@@ -41,7 +41,7 @@ static void reduce_fafft(uint64_t *o, const uint64_t *a) {
 
 static void pointwise_mul(gf32 *o, const gf32 *a, const gf32 *b) {
     for (size_t i = 0; i < FAFFT_NP; i++) {
-        o[i] = gf32_mul(a[i, b[i]]);
+        o[i] = gf32_mul(a[i], b[i]);
     }
 }
 
