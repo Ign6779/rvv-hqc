@@ -16,14 +16,6 @@
 #include <string.h>
 #include "parameters.h"
 
-#ifndef FAFFT_N_BITS
-#define FAFFT_N_BITS (2 * PARAM_N)
-#endif
-
-#ifndef FAFFT_N_WORDS
-#define FAFFT_N_WORDS CEIL_DIVIDE(FAFFT_N_BITS, 64)
-#endif
-
 
 static void fafft_mul(uint64_t *o, const uint64_t *a, const uint64_t *b) {
     (void)a;

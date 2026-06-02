@@ -44,6 +44,13 @@
 #define PARAM_G                     59          ///< Define the size of the generator polynomial of the Reed-Solomon code
 #define PARAM_FFT                   5           ///< Exponent for additive FFT (2^PARAM_FFT points)
 
+#define FAFFT_FIELD_BITS            32
+#define FAFFT_N_BITS                131072
+#define FAFFT_N_WORDS               (FAFFT_N_BITS / 64)
+#define FAFFT_NP                    (FAFFT_N_BITS / FAFFT_FIELD_BITS)
+#define FAFFT_LNP                   12
+#define FAFFT_SIGMA_BETA_INDEX      28
+
 #define RS_POLY_COEFS                                                                                                  \
     49,167,49,39,200,121,124,91,240,63,148,71,150,123,87,101,32,215,159,71,201,115,97,210,186,183,141,217,123,12,31,    \
     243,180,219,152,239,99,141,4,246,191,144,8,232,47,27,141,178,130,64,124,47,39,188,216,48,199,187,1                  ///< Coefficients of the Reed-Solomon generator polynomial
