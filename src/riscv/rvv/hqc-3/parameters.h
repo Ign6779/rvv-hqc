@@ -50,6 +50,7 @@
 #define FAFFT_NP                    (FAFFT_N_BITS / FAFFT_FIELD_BITS)
 #define FAFFT_LNP                   12
 #define FAFFT_SIGMA_BETA_INDEX      28
+#define FAFFT_GF32_POLY             0x100400007ULL
 
 #define RS_POLY_COEFS                                                                                                \
     45, 216, 239, 24, 253, 104, 27, 40, 107, 50, 163, 210, 227, 134, 224, 158, 119, 13, 158, 1, 238, 164, 82, 43, 15, \

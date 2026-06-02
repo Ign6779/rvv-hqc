@@ -12,6 +12,7 @@
  */
 
 #include "gf2x.h"
+#include "gf32.h"
 #include <stdint.h>
 #include <string.h>
 #include "parameters.h"
@@ -36,6 +37,12 @@ static void reduce_fafft(uint64_t *o, const uint64_t *a) {
     }
 
     o[VEC_N_SIZE_64 - 1] &= BITMASK(PARAM_N, 64); 
+}
+
+static void pointwise_mul(gf32 *o, const gf32 *a, const gf32 *b) {
+    for (size_t i = 0; i < FAFFT_NP; i++) {
+        o[i] = gf32_mul(a[i, b[i]]);
+    }
 }
 
 /**
