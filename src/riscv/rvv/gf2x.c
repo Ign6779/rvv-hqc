@@ -25,7 +25,7 @@ static void reduce_fafft(uint64_t *o, const uint64_t *a) {
 
     for (size_t bit = 0; bit < FAFFT_N_BITS; bit++) {
         uint64_t value = (a[bit >> 6] >> (bit & 63)) & 1ULL;
-        size_t dst = bit % PARAM_N
+        size_t dst = bit % PARAM_N;
         o[dst >> 6] ^= value << (dst & 63);
     }
 
