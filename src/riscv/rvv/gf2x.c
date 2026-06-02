@@ -17,7 +17,12 @@
 #include "parameters.h"
 
 static void fafft_mul(uint64_t *o, const uint64_t *a, const uint64_t *b) {
+    (void)a;
+    (void)b;
 
+    for (size_t i = 0; i < FAFFT_N_WORDS; i++) {
+        o[i] = 0;
+    }
 }
 
 static void reduce_fafft(uint64_t *o, const uint64_t *a) {
@@ -30,24 +35,6 @@ static void reduce_fafft(uint64_t *o, const uint64_t *a) {
     }
 
     o[VEC_N_SIZE_64 - 1] &= BITMASK(PARAM_N, 64); 
-}
-
-/**
- * @brief Modular reduction of a degree < 2*n polynomial mod (X^n - 1).
- *
- * Folds the high half of the full product back into the low half
- * and masks any excess bits in the last word.
- *
- * @param[out] o  Result buffer, size VEC_N_SIZE_64 words.
- * @param[in]  a  Input buffer, size 2*VEC_N_SIZE_64 words.
- */
-static void reduce(uint64_t *o, const uint64_t *a) {
-    for (size_t i = 0; i < VEC_N_SIZE_64; i++) {
-        uint64_t r = a[i + VEC_N_SIZE_64 - 1] >> (PARAM_N & 0x3F);
-        uint64_t carry = a[i + VEC_N_SIZE_64] << (64 - (PARAM_N & 0x3F));
-        o[i] = a[i] ^ r ^ carry;
-    }
-    o[VEC_N_SIZE_64 - 1] &= BITMASK(PARAM_N, 64);
 }
 
 /**
