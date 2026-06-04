@@ -3,6 +3,15 @@
 #include <string.h>
 #include "gf32v_tower.h"
 
+extern void gf32v_rvv_mul16(uint64_t *out, const uint64_t *a, const uint64_t *b, unsigned nwords);
+extern void gf32v_rvv_mul16_8(uint64_t *out, const uint64_t *a, unsigned nwords);
+
+extern void gf32v_rvv_mul256(uint64_t *out, const uint64_t *a, const uint64_t *b, unsigned nwords);
+extern void gf32v_rvv_mul256_0x80(uint64_t *out, const uint64_t *a, unsigned nwords);
+
+extern void gf32v_rvv_mul216(uint64_t *out, const uint64_t *a, const uint64_t *b, unsigned nwords);
+extern void gf32v_rvv_mul216_0x8000(uint64_t *out, const uint64_t *a, unsigned nwords);
+
 static uint64_t rng_state = 0x123456789abcdef0ULL;
 
 static uint64_t rng64(void) {
@@ -208,7 +217,162 @@ static void zero_gf32v(gf32v_array *out) {
     memset(out, 0, sizeof(*out));
 }
 
+static int test_internal_layers(void) {
+    uint64_t a[32 * GF32V_WORDS];
+    uint64_t b[32 * GF32V_WORDS];
+
+    uint64_t rvv[32 * GF32V_WORDS];
+    uint64_t ref[32 * GF32V_WORDS];
+
+    for (unsigned t = 0; t < 100; t++) {
+        for (unsigned i = 0; i < 32 * GF32V_WORDS; i++) {
+            a[i] = rng64();
+            b[i] = rng64();
+        }
+
+        memset(rvv, 0, sizeof(rvv));
+        memset(ref, 0, sizeof(ref));
+
+        /*
+         * Test GF(2^4) multiply.
+         */
+        gf32v_rvv_mul16(rvv, a, b, GF32V_WORDS);
+        ref_gf16_mul(ref, a, b);
+
+        if (memcmp(rvv, ref, 4 * GF32V_WORDS * sizeof(uint64_t)) != 0) {
+            printf("FAIL internal gf32v_rvv_mul16 test %u\n", t);
+            for (unsigned i = 0; i < 4 * GF32V_WORDS; i++) {
+                if (rvv[i] != ref[i]) {
+                    printf("first diff flat word=%u\n", i);
+                    printf("got      = 0x%016lx\n", rvv[i]);
+                    printf("expected = 0x%016lx\n", ref[i]);
+                    printf("xor diff = 0x%016lx\n", rvv[i] ^ ref[i]);
+                    return 1;
+                }
+            }
+        }
+
+        /*
+         * Test GF(2^4) multiply by 0x8.
+         */
+        memset(rvv, 0, sizeof(rvv));
+        memset(ref, 0, sizeof(ref));
+
+        gf32v_rvv_mul16_8(rvv, a, GF32V_WORDS);
+        ref_gf16_mul8(ref, a);
+
+        if (memcmp(rvv, ref, 4 * GF32V_WORDS * sizeof(uint64_t)) != 0) {
+            printf("FAIL internal gf32v_rvv_mul16_8 test %u\n", t);
+            for (unsigned i = 0; i < 4 * GF32V_WORDS; i++) {
+                if (rvv[i] != ref[i]) {
+                    printf("first diff flat word=%u\n", i);
+                    printf("got      = 0x%016lx\n", rvv[i]);
+                    printf("expected = 0x%016lx\n", ref[i]);
+                    printf("xor diff = 0x%016lx\n", rvv[i] ^ ref[i]);
+                    return 1;
+                }
+            }
+        }
+
+        /*
+         * Test GF(2^8) multiply.
+         */
+        memset(rvv, 0, sizeof(rvv));
+        memset(ref, 0, sizeof(ref));
+
+        gf32v_rvv_mul256(rvv, a, b, GF32V_WORDS);
+        ref_gf256_mul(ref, a, b);
+
+        if (memcmp(rvv, ref, 8 * GF32V_WORDS * sizeof(uint64_t)) != 0) {
+            printf("FAIL internal gf32v_rvv_mul256 test %u\n", t);
+            for (unsigned i = 0; i < 8 * GF32V_WORDS; i++) {
+                if (rvv[i] != ref[i]) {
+                    printf("first diff flat word=%u\n", i);
+                    printf("got      = 0x%016lx\n", rvv[i]);
+                    printf("expected = 0x%016lx\n", ref[i]);
+                    printf("xor diff = 0x%016lx\n", rvv[i] ^ ref[i]);
+                    return 1;
+                }
+            }
+        }
+
+        /*
+         * Test GF(2^8) multiply by 0x80.
+         */
+        memset(rvv, 0, sizeof(rvv));
+        memset(ref, 0, sizeof(ref));
+
+        gf32v_rvv_mul256_0x80(rvv, a, GF32V_WORDS);
+        ref_gf256_mul80(ref, a);
+
+        if (memcmp(rvv, ref, 8 * GF32V_WORDS * sizeof(uint64_t)) != 0) {
+            printf("FAIL internal gf32v_rvv_mul256_0x80 test %u\n", t);
+            for (unsigned i = 0; i < 8 * GF32V_WORDS; i++) {
+                if (rvv[i] != ref[i]) {
+                    printf("first diff flat word=%u\n", i);
+                    printf("got      = 0x%016lx\n", rvv[i]);
+                    printf("expected = 0x%016lx\n", ref[i]);
+                    printf("xor diff = 0x%016lx\n", rvv[i] ^ ref[i]);
+                    return 1;
+                }
+            }
+        }
+
+        /*
+         * Test GF(2^16) multiply.
+         */
+        memset(rvv, 0, sizeof(rvv));
+        memset(ref, 0, sizeof(ref));
+
+        gf32v_rvv_mul216(rvv, a, b, GF32V_WORDS);
+        ref_gf216_mul(ref, a, b);
+
+        if (memcmp(rvv, ref, 16 * GF32V_WORDS * sizeof(uint64_t)) != 0) {
+            printf("FAIL internal gf32v_rvv_mul216 test %u\n", t);
+            for (unsigned i = 0; i < 16 * GF32V_WORDS; i++) {
+                if (rvv[i] != ref[i]) {
+                    printf("first diff flat word=%u\n", i);
+                    printf("got      = 0x%016lx\n", rvv[i]);
+                    printf("expected = 0x%016lx\n", ref[i]);
+                    printf("xor diff = 0x%016lx\n", rvv[i] ^ ref[i]);
+                    return 1;
+                }
+            }
+        }
+
+        /*
+         * Test GF(2^16) multiply by 0x8000.
+         */
+        memset(rvv, 0, sizeof(rvv));
+        memset(ref, 0, sizeof(ref));
+
+        gf32v_rvv_mul216_0x8000(rvv, a, GF32V_WORDS);
+        ref_gf216_mul8000(ref, a);
+
+        if (memcmp(rvv, ref, 16 * GF32V_WORDS * sizeof(uint64_t)) != 0) {
+            printf("FAIL internal gf32v_rvv_mul216_0x8000 test %u\n", t);
+            for (unsigned i = 0; i < 16 * GF32V_WORDS; i++) {
+                if (rvv[i] != ref[i]) {
+                    printf("first diff flat word=%u\n", i);
+                    printf("got      = 0x%016lx\n", rvv[i]);
+                    printf("expected = 0x%016lx\n", ref[i]);
+                    printf("xor diff = 0x%016lx\n", rvv[i] ^ ref[i]);
+                    return 1;
+                }
+            }
+        }
+    }
+
+    printf("PASS internal tower layer tests\n");
+    return 0;
+}
+
 int main(void) {
+
+    if (test_internal_layers() != 0) {
+        return 1;
+    }
+    
     /*
      * Deterministic sanity tests first.
      * These isolate layout / identity / zero problems before random multiplication.
