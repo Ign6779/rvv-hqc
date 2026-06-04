@@ -153,6 +153,7 @@ foreach(param_variant IN LISTS VARIANTS)
         target_include_directories(${gf32v_tower_exe_name} PRIVATE
                 ${COMMON_INCLUDES}
                 ${PARAM_INCLUDES}
+                ${CMAKE_SOURCE_DIR}/src/riscv/rvv/fafft
         )
 
         add_test(NAME ${gf32v_tower_exe_name} COMMAND ${gf32v_tower_exe_name})
