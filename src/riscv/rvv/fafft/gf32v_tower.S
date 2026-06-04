@@ -4,40 +4,40 @@
     .align 2
 
 .macro GF32V_MUL_0X2_PAIR
-    vle.v       v0, (t2)
+    vle64.v       v0, (t2)
     add         t2, t2, t5
-    vle.v       v8, (t2)
+    vle64.v       v8, (t2)
 
-    vse.v       v8, (t3)
+    vse64.v       v8, (t3)
 
     vxor.vv     v16, v0, v8
     add         t3, t3, t5
-    vse.v       v16, (t3)
+    vse64.v       v16, (t3)
 
     add         t2, t2, t5
     add         t3, t3, t5
 .endm
 
 .macro GF32V_MUL_0X5_BLOCK4
-    vle.v       v0, (t2)
+    vle64.v       v0, (t2)
     add         t2, t2, t5
-    vle.v       v8, (t2)
+    vle64.v       v8, (t2)
     add         t2, t2, t5
-    vle.v       v16, (t2)
+    vle64.v       v16, (t2)
     add         t2, t2, t5
-    vle.v       v24, (t2)
+    vle64.v       v24, (t2)
 
     vxor.vv     v16, v16, v24
     vxor.vv     v16, v16, v8
     vxor.vv     v24, v24, v0
 
-    vse.v       v24, (t3)
+    vse64.v       v24, (t3)
     add         t3, t3, t5
-    vse.v       v16, (t3)
+    vse64.v       v16, (t3)
     add         t3, t3, t5
-    vse.v       v0, (t3)
+    vse64.v       v0, (t3)
     add         t3, t3, t5
-    vse.v       v8, (t3)
+    vse64.v       v8, (t3)
 
     add         t2, t2, t5
     add         t3, t3, t5
@@ -130,20 +130,20 @@ gf32v_rvv_mul_0x5:
     .extern gf32v_rvv_mul216_0x8000
 
 .macro GF32V_XOR16_BODY
-    vle.v       v0, (t2)
-    vle.v       v8, (t3)
+    vle64.v       v0, (t2)
+    vle64.v       v8, (t3)
     vxor.vv     v0, v0, v8
-    vse.v       v0, (a4)
+    vse64.v       v0, (a4)
     add         t2, t2, t5
     add         t3, t3, t5
     add         a4, a4, t5
 .endm
 
 .macro GF32V_XOR16_INPLACE_BODY
-    vle.v       v0, (a4)
-    vle.v       v8, (t3)
+    vle64.v       v0, (a4)
+    vle64.v       v8, (t3)
     vxor.vv     v0, v0, v8
-    vse.v       v0, (a4)
+    vse64.v       v0, (a4)
     add         a4, a4, t5
     add         t3, t3, t5
 .endm
@@ -335,20 +335,20 @@ gf32v_rvv_mul:
     .extern gf32v_rvv_mul256_0x80
 
 .macro GF32V_XOR8_BODY
-    vle.v       v0, (t2)
-    vle.v       v8, (t3)
+    vle64.v       v0, (t2)
+    vle64.v       v8, (t3)
     vxor.vv     v0, v0, v8
-    vse.v       v0, (a4)
+    vse64.v       v0, (a4)
     add         t2, t2, t5
     add         t3, t3, t5
     add         a4, a4, t5
 .endm
 
 .macro GF32V_XOR8_INPLACE_BODY
-    vle.v       v0, (a4)
-    vle.v       v8, (t3)
+    vle64.v       v0, (a4)
+    vle64.v       v8, (t3)
     vxor.vv     v0, v0, v8
-    vse.v       v0, (a4)
+    vse64.v       v0, (a4)
     add         a4, a4, t5
     add         t3, t3, t5
 .endm
@@ -578,20 +578,20 @@ gf32v_rvv_mul216_0x8000:
     .extern gf32v_rvv_mul16_8
 
 .macro GF32V_XOR4_BODY
-    vle.v       v0, (t2)
-    vle.v       v8, (t3)
+    vle64.v       v0, (t2)
+    vle64.v       v8, (t3)
     vxor.vv     v0, v0, v8
-    vse.v       v0, (a4)
+    vse64.v       v0, (a4)
     add         t2, t2, t5
     add         t3, t3, t5
     add         a4, a4, t5
 .endm
 
 .macro GF32V_XOR4_INPLACE_BODY
-    vle.v       v0, (a4)
-    vle.v       v8, (t3)
+    vle64.v       v0, (a4)
+    vle64.v       v8, (t3)
     vxor.vv     v0, v0, v8
-    vse.v       v0, (a4)
+    vse64.v       v0, (a4)
     add         a4, a4, t5
     add         t3, t3, t5
 .endm
@@ -820,22 +820,22 @@ gf32v_rvv_mul16:
     slli        t1, t0, 3
 
     add         t2, a1, t6
-    vle.v       v0, (t2)
+    vle64.v       v0, (t2)
     add         t2, t2, t5
-    vle.v       v1, (t2)
+    vle64.v       v1, (t2)
     add         t2, t2, t5
-    vle.v       v2, (t2)
+    vle64.v       v2, (t2)
     add         t2, t2, t5
-    vle.v       v3, (t2)
+    vle64.v       v3, (t2)
 
     add         t3, a2, t6
-    vle.v       v4, (t3)
+    vle64.v       v4, (t3)
     add         t3, t3, t5
-    vle.v       v5, (t3)
+    vle64.v       v5, (t3)
     add         t3, t3, t5
-    vle.v       v6, (t3)
+    vle64.v       v6, (t3)
     add         t3, t3, t5
-    vle.v       v7, (t3)
+    vle64.v       v7, (t3)
 
     vxor.vv     v8, v0, v2
     vxor.vv     v9, v1, v3
@@ -869,20 +869,20 @@ gf32v_rvv_mul16:
     add         a4, a0, t6
 
     vxor.vv     v31, v20, v30
-    vse.v       v31, (a4)
+    vse64.v       v31, (a4)
     add         a4, a4, t5
 
     vxor.vv     v31, v21, v30
     vxor.vv     v31, v31, v27
-    vse.v       v31, (a4)
+    vse64.v       v31, (a4)
     add         a4, a4, t5
 
     vxor.vv     v31, v22, v20
-    vse.v       v31, (a4)
+    vse64.v       v31, (a4)
     add         a4, a4, t5
 
     vxor.vv     v31, v23, v21
-    vse.v       v31, (a4)
+    vse64.v       v31, (a4)
 
     add         t6, t6, t1
     sub         t4, t4, t0
@@ -908,13 +908,13 @@ gf32v_rvv_mul16_8:
     slli        t1, t0, 3
 
     add         t2, a1, t6
-    vle.v       v0, (t2)
+    vle64.v       v0, (t2)
     add         t2, t2, t5
-    vle.v       v1, (t2)
+    vle64.v       v1, (t2)
     add         t2, t2, t5
-    vle.v       v2, (t2)
+    vle64.v       v2, (t2)
     add         t2, t2, t5
-    vle.v       v3, (t2)
+    vle64.v       v3, (t2)
 
     vxor.vv     v4, v2, v3
     vxor.vv     v5, v1, v3
@@ -922,13 +922,13 @@ gf32v_rvv_mul16_8:
     vxor.vv     v6, v6, v4
 
     add         a4, a0, t6
-    vse.v       v4, (a4)
+    vse64.v       v4, (a4)
     add         a4, a4, t5
-    vse.v       v2, (a4)
+    vse64.v       v2, (a4)
     add         a4, a4, t5
-    vse.v       v5, (a4)
+    vse64.v       v5, (a4)
     add         a4, a4, t5
-    vse.v       v6, (a4)
+    vse64.v       v6, (a4)
 
     add         t6, t6, t1
     sub         t4, t4, t0
