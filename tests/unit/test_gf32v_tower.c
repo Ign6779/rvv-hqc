@@ -204,7 +204,65 @@ static void ref_gf232_mul(gf32v_array *out, const gf32v_array *a, const gf32v_ar
     ref_xor_inplace(o, red, 16);
 }
 
+static void zero_gf32v(gf32v_array *out) {
+    memset(out, 0, sizeof(*out));
+}
+
 int main(void) {
+    /*
+     * Deterministic sanity tests first.
+     * These isolate layout / identity / zero problems before random multiplication.
+     */
+    {
+        gf32v_array zero;
+        gf32v_array one;
+        gf32v_array a;
+        gf32v_array rvv;
+        gf32v_array ref;
+
+        zero_gf32v(&zero);
+        set_scalar_gf32v(&one, 0x1);
+        rand_gf32v(&a);
+
+        gf32v_mul(&rvv, &a, &zero);
+        ref_gf232_mul(&ref, &a, &zero);
+
+        if (!eq_gf32v(&rvv, &ref)) {
+            printf("FAIL deterministic a*0\n");
+            print_first_diff(&rvv, &ref);
+            return 1;
+        }
+
+        gf32v_mul(&rvv, &zero, &a);
+        ref_gf232_mul(&ref, &zero, &a);
+
+        if (!eq_gf32v(&rvv, &ref)) {
+            printf("FAIL deterministic 0*a\n");
+            print_first_diff(&rvv, &ref);
+            return 1;
+        }
+
+        gf32v_mul(&rvv, &a, &one);
+        ref_gf232_mul(&ref, &a, &one);
+
+        if (!eq_gf32v(&rvv, &ref)) {
+            printf("FAIL deterministic a*1\n");
+            print_first_diff(&rvv, &ref);
+            return 1;
+        }
+
+        gf32v_mul(&rvv, &one, &a);
+        ref_gf232_mul(&ref, &one, &a);
+
+        if (!eq_gf32v(&rvv, &ref)) {
+            printf("FAIL deterministic 1*a\n");
+            print_first_diff(&rvv, &ref);
+            return 1;
+        }
+
+        printf("PASS deterministic zero/one tests\n");
+    }
+
     for (unsigned t = 0; t < 100; t++) {
         gf32v_array a;
         gf32v_array b;
@@ -219,10 +277,6 @@ int main(void) {
         set_scalar_gf32v(&two, 0x2);
         set_scalar_gf32v(&five, 0x5);
 
-        /*
-         * Test gf32v_mul wrapper.
-         * This also tests the full gf32v_rvv_mul assembly path underneath.
-         */
         gf32v_mul(&rvv, &a, &b);
         ref_gf232_mul(&ref, &a, &b);
 
@@ -232,45 +286,33 @@ int main(void) {
             return 1;
         }
 
-        /*
-         * Test gf32v_square wrapper.
-         * This should be exactly equivalent to a * a.
-         */
         gf32v_square(&rvv, &a);
         ref_gf232_mul(&ref, &a, &a);
 
         if (!eq_gf32v(&rvv, &ref)) {
             printf("FAIL square test %u\n", t);
+            print_first_diff(&rvv, &ref);
             return 1;
         }
 
-        /*
-         * Test gf32v_mul_0x2 wrapper.
-         * Reference is ordinary GF(2^32) multiplication by scalar 0x2.
-         */
         gf32v_mul_0x2(&rvv, &a);
         ref_gf232_mul(&ref, &a, &two);
 
         if (!eq_gf32v(&rvv, &ref)) {
             printf("FAIL mul_0x2 test %u\n", t);
+            print_first_diff(&rvv, &ref);
             return 1;
         }
 
-        /*
-         * Test gf32v_mul_0x5 wrapper.
-         * Reference is ordinary GF(2^32) multiplication by scalar 0x5.
-         */
         gf32v_mul_0x5(&rvv, &a);
         ref_gf232_mul(&ref, &a, &five);
 
         if (!eq_gf32v(&rvv, &ref)) {
             printf("FAIL mul_0x5 test %u\n", t);
+            print_first_diff(&rvv, &ref);
             return 1;
         }
 
-        /*
-         * Aliasing test: gf32v_mul with out == a.
-         */
         gf32v_array expected_alias;
         gf32v_array actual_alias;
 
@@ -281,23 +323,19 @@ int main(void) {
 
         if (!eq_gf32v(&actual_alias, &expected_alias)) {
             printf("FAIL mul alias out==a test %u\n", t);
+            print_first_diff(&actual_alias, &expected_alias);
             return 1;
         }
 
-        /*
-         * Aliasing test: gf32v_mul with out == b.
-         */
         actual_alias = b;
         gf32v_mul(&actual_alias, &a, &actual_alias);
 
         if (!eq_gf32v(&actual_alias, &expected_alias)) {
             printf("FAIL mul alias out==b test %u\n", t);
+            print_first_diff(&actual_alias, &expected_alias);
             return 1;
         }
 
-        /*
-         * Aliasing test: gf32v_square with out == a.
-         */
         ref_gf232_mul(&expected_alias, &a, &a);
 
         actual_alias = a;
@@ -305,12 +343,10 @@ int main(void) {
 
         if (!eq_gf32v(&actual_alias, &expected_alias)) {
             printf("FAIL square alias test %u\n", t);
+            print_first_diff(&actual_alias, &expected_alias);
             return 1;
         }
 
-        /*
-         * Aliasing test: gf32v_mul_0x2 with out == a.
-         */
         ref_gf232_mul(&expected_alias, &a, &two);
 
         actual_alias = a;
@@ -318,12 +354,10 @@ int main(void) {
 
         if (!eq_gf32v(&actual_alias, &expected_alias)) {
             printf("FAIL mul_0x2 alias test %u\n", t);
+            print_first_diff(&actual_alias, &expected_alias);
             return 1;
         }
 
-        /*
-         * Aliasing test: gf32v_mul_0x5 with out == a.
-         */
         ref_gf232_mul(&expected_alias, &a, &five);
 
         actual_alias = a;
@@ -331,6 +365,7 @@ int main(void) {
 
         if (!eq_gf32v(&actual_alias, &expected_alias)) {
             printf("FAIL mul_0x5 alias test %u\n", t);
+            print_first_diff(&actual_alias, &expected_alias);
             return 1;
         }
     }
