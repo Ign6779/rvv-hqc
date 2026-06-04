@@ -138,11 +138,12 @@ foreach(param_variant IN LISTS VARIANTS)
         set(gf32v_tower_exe_name test_gf32v_tower_${safe_param}_${HQC_RISCV_IMPL})
 
         add_executable(${gf32v_tower_exe_name}
-                ${GF32V_TOWER_TEST_SRC}
+                ${GF32V_TOWER_TEST_SRC}            
+                ${CMAKE_SOURCE_DIR}/src/riscv/rvv/fafft/gf32v_tower.c
+                ${CMAKE_SOURCE_DIR}/src/riscv/rvv/fafft/gf32v_tower.S
         )
 
         target_link_libraries(${gf32v_tower_exe_name} PRIVATE
-                ${lib_target}
                 fips202
         )
 
