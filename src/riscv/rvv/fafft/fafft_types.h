@@ -4,6 +4,6 @@
 #include <stdint.h>
 
 typedef uint8_t f2;
-typedef uint32_t gf32;
+typedef uint64_t gf32v_word_t;
 
 #endif
