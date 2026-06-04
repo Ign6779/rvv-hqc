@@ -24,6 +24,7 @@ set(RS_TEST_SRC   ${TESTS_DIR}/test_reed_solomon.c)
 set(VEC_TEST_SRC  ${TESTS_DIR}/test_vector.c)
 set(MAIN_TEST_SRC ${TESTS_DIR}/tests_main.c)
 set(GF2X_NTL_SRC  ${TESTS_DIR}/test_vect_mul.cpp)
+set(GF32V_TOWER_TEST_SRC ${TESTS_DIR}/test_gf32v_tower.c)
 
 set(COMMON_INCLUDES
         ${CMAKE_SOURCE_DIR}/src/common
@@ -131,6 +132,33 @@ foreach(param_variant IN LISTS VARIANTS)
             )
         endif()
     endif()
+
+    # temporary
+    if(HQC_ARCH STREQUAL "riscv" AND HQC_RISCV_IMPL STREQUAL "rvv" AND param_variant STREQUAL "hqc-1")
+        set(gf32v_tower_exe_name test_gf32v_tower_${safe_param}_${HQC_RISCV_IMPL})
+
+        add_executable(${gf32v_tower_exe_name}
+                ${GF32V_TOWER_TEST_SRC}
+        )
+
+        target_link_libraries(${gf32v_tower_exe_name} PRIVATE
+                ${lib_target}
+                fips202
+        )
+
+        target_compile_definitions(${gf32v_tower_exe_name} PRIVATE
+                RVV_MODE
+        )
+
+        target_include_directories(${gf32v_tower_exe_name} PRIVATE
+                ${COMMON_INCLUDES}
+                ${PARAM_INCLUDES}
+        )
+
+        add_test(NAME ${gf32v_tower_exe_name} COMMAND ${gf32v_tower_exe_name})
+        set_tests_properties(${gf32v_tower_exe_name} PROPERTIES LABELS "unit;gf32v;rvv")
+    endif()
+    # end temporary
 
     add_test(NAME ${exe_name} COMMAND ${exe_name})
     set_tests_properties(${exe_name} PROPERTIES LABELS "unit")
