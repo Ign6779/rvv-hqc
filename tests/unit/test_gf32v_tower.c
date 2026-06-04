@@ -26,6 +26,23 @@ static int eq_gf32v(const gf32v_array *a, const gf32v_array *b) {
     return memcmp(a, b, sizeof(*a)) == 0;
 }
 
+static void print_first_diff(const gf32v_array *got, const gf32v_array *expected) {
+    for (unsigned i = 0; i < GF32V_PLANES; i++) {
+        for (unsigned j = 0; j < GF32V_WORDS; j++) {
+            uint64_t g = got->plane[i][j];
+            uint64_t e = expected->plane[i][j];
+
+            if (g != e) {
+                printf("first diff: plane=%u word=%u\n", i, j);
+                printf("got      = 0x%016lx\n", g);
+                printf("expected = 0x%016lx\n", e);
+                printf("xor diff = 0x%016lx\n", g ^ e);
+                return;
+            }
+        }
+    }
+}
+
 static void set_scalar_gf32v(gf32v_array *out, uint32_t scalar) {
     for (unsigned i = 0; i < GF32V_PLANES; i++) {
         uint64_t mask = (scalar & 1u) ? UINT64_MAX : 0;
@@ -211,6 +228,7 @@ int main(void) {
 
         if (!eq_gf32v(&rvv, &ref)) {
             printf("FAIL mul test %u\n", t);
+            print_first_diff(&rvv, &ref);
             return 1;
         }
 
