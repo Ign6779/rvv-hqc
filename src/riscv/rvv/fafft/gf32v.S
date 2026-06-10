@@ -12,7 +12,7 @@ gf32v_rvv_zero:
     VSETVLI_E64_M8(t0, a1)
 
     vmv.v.i v0, 0
-    vse.v   v0, (a0)
+    vse64.v   v0, (a0)
 
     slli    t1, t0, 3
     add     a0, a0, t1
@@ -33,8 +33,8 @@ gf32v_rvv_copy:
 1:
     VSETVLI_E64_M8(t0, a2)
 
-    vle.v   v0, (a1)
-    vse.v   v0, (a0)
+    vle64.v   v0, (a1)
+    vse64.v   v0, (a0)
 
     slli    t1, t0, 3
     add     a0, a0, t1
@@ -56,10 +56,10 @@ gf32v_rvv_xor:
 1:
     VSETVLI_E64_M8(t0, a3)
 
-    vle.v   v0, (a1)
-    vle.v   v8, (a2)
+    vle64.v   v0, (a1)
+    vle64.v   v8, (a2)
     vxor.vv v0, v0, v8
-    vse.v   v0, (a0)
+    vse64.v   v0, (a0)
 
     slli    t1, t0, 3
     add     a0, a0, t1
@@ -82,10 +82,10 @@ gf32v_rvv_xor_inplace:
 1:
     VSETVLI_E64_M8(t0, a2)
 
-    vle.v   v0, (a0)
-    vle.v   v8, (a1)
+    vle64.v   v0, (a0)
+    vle64.v   v8, (a1)
     vxor.vv v0, v0, v8
-    vse.v   v0, (a0)
+    vse64.v   v0, (a0)
 
     slli    t1, t0, 3
     add     a0, a0, t1
