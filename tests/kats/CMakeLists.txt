@@ -100,6 +100,10 @@ foreach(variant IN LISTS VARIANTS)
                 "${IMPL_DIR}/*.c"
                 "${IMPL_DIR}/*.S"
         )
+        file(GLOB IMPL_FAFFT_SRCS
+                "${IMPL_DIR}/fafft/*.c"
+                "${IMPL_DIR}/fafft/*.S"
+        )
         file(GLOB ARCH_COMMON_SRCS
                 "${ARCH_COMMON_DIR}/*.c"
                 "${ARCH_COMMON_DIR}/*.S"
@@ -118,6 +122,7 @@ foreach(variant IN LISTS VARIANTS)
                 ${COMMON_SRCS}
                 ${ARCH_COMMON_SRCS}
                 ${IMPL_SRCS}
+                ${IMPL_FAFFT_SRCS}
                 ${VARIANT_SRCS}
         )
         target_compile_options(${exe} PRIVATE
@@ -138,6 +143,7 @@ foreach(variant IN LISTS VARIANTS)
                 ${ARCH_COMMON_DIR}
                 ${ARCH_COMMON_DIR}/${variant}
                 ${IMPL_DIR}
+                ${IMPL_DIR}/fafft
                 ${IMPL_DIR}/${variant}
                 ${CMAKE_SOURCE_DIR}/lib/fips202
                 ${CMAKE_SOURCE_DIR}/lib/nist-rng
