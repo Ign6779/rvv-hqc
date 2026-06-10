@@ -64,9 +64,9 @@ static void set_scalar_gf32v(gf32v_array *out, uint32_t scalar) {
     }
 }
 
-static void ref_copy(uint64_t *out, const uint64_t *a, unsigned planes) {
-    memcpy(out, a, planes * GF32V_WORDS * sizeof(uint64_t));
-}
+// static void ref_copy(uint64_t *out, const uint64_t *a, unsigned planes) {
+//     memcpy(out, a, planes * GF32V_WORDS * sizeof(uint64_t));
+// }
 
 static void ref_xor(uint64_t *out, const uint64_t *a, const uint64_t *b, unsigned planes) {
     for (unsigned i = 0; i < planes * GF32V_WORDS; i++) {
