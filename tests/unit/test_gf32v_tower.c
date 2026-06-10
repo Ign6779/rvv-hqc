@@ -104,11 +104,17 @@ static void ref_gf4_mul(uint64_t *out, const uint64_t *a, const uint64_t *b) {
 }
 
 static void ref_gf16_mul8(uint64_t *out, const uint64_t *a) {
-    uint64_t t[2 * GF32V_WORDS];
+    for (unsigned j = 0; j < GF32V_WORDS; j++) {
+        uint64_t a0 = a[0 * GF32V_WORDS + j];
+        uint64_t a1 = a[1 * GF32V_WORDS + j];
+        uint64_t a2 = a[2 * GF32V_WORDS + j];
+        uint64_t a3 = a[3 * GF32V_WORDS + j];
 
-    ref_gf4_mul2(t, a + 2 * GF32V_WORDS);
-    ref_copy(out + 2 * GF32V_WORDS, a, 2);
-    ref_xor(out, a + 2 * GF32V_WORDS, t, 2);
+        out[0 * GF32V_WORDS + j] = a2 ^ a3;
+        out[1 * GF32V_WORDS + j] = a2;
+        out[2 * GF32V_WORDS + j] = a1 ^ a3;
+        out[3 * GF32V_WORDS + j] = a0 ^ a1 ^ a2 ^ a3;
+    }
 }
 
 static void ref_gf16_mul(uint64_t *out, const uint64_t *a, const uint64_t *b) {
