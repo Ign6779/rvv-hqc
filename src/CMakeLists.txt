@@ -39,6 +39,10 @@ file(GLOB PLATFORM_SOURCES
         "${PLATFORM_DIR}/*.c"
         "${PLATFORM_DIR}/*.S"
 )
+file(GLOB PLATFORM_FAFFT_SOURCES
+        "${PLATFORM_DIR}/fafft/*.c"
+        "${PLATFORM_DIR}/fafft/*.S"
+)
 
 # 4) build one static library per variant
 foreach(var IN LISTS VARIANTS)
@@ -68,6 +72,7 @@ foreach(var IN LISTS VARIANTS)
             ${ARCH_COMMON_TOP_SOURCES}
             ${ARCH_COMMON_VARIANT_SOURCES}
             ${PLATFORM_SOURCES}
+            ${PLATFORM_FAFFT_SOURCES}
             ${VARIANT_SOURCES}
     )
 
@@ -77,6 +82,7 @@ foreach(var IN LISTS VARIANTS)
             "${ARCH_COMMON_DIR}"
             "${ARCH_COMMON_DIR}/${var}"
             "${PLATFORM_DIR}"
+            "${PLATFORM_DIR}/fafft"
             "${VAR_DIR}"
             "${CMAKE_SOURCE_DIR}/lib/fips202"
     )
