@@ -6,7 +6,7 @@
 
 #include "gf2x.h"
 #include "parameters.h"
-#include "fafft/fafft.h"
+#include "fafft.h"
 
 #include <stdint.h>
 
