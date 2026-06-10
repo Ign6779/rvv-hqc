@@ -14,10 +14,10 @@ fafft_rvv_xor_up_u8:
 1:
     VSETVLI_E8_M8(t0, a2)
 
-    vle.v   v0, (t1)          # v0-v7
-    vle.v   v8, (t2)          # v8-v15
+    vle8.v   v0, (t1)          # v0-v7
+    vle8.v   v8, (t2)          # v8-v15
     vxor.vv v0, v0, v8
-    vse.v   v0, (t1)
+    vse8.v   v0, (t1)
 
     add     t1, t1, t0
     add     t2, t2, t0
@@ -53,10 +53,10 @@ fafft_rvv_xor_down_u8:
     sub     t1, t1, t0
     sub     t2, t2, t0
 
-    vle.v   v0, (t1)          # v0-v7
-    vle.v   v8, (t2)          # v8-v15
+    vle8.v   v0, (t1)          # v0-v7
+    vle8.v   v8, (t2)          # v8-v15
     vxor.vv v0, v0, v8
-    vse.v   v0, (t1)
+    vse8.v   v0, (t1)
 
     sub     a2, a2, t0
     bnez    a2, 1b
