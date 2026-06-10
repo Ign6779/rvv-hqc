@@ -377,6 +377,7 @@ static void decode_circuit_u64(uint64_t out[32][GF32V_WORDS],
                                const uint64_t b[32][GF32V_WORDS])
 {
     plane_t g0, g1, g2, g3, g4, g5, g6, g7, g8, g9, g10, g11;
+    (void)sizeof(g11); //compiler complains otherwise
     plane_t f0, f1, f2, f3, f4, f5, f6, f7, f8, f9, f10, f11;
     plane_t f12, f13, f14, f15, f16, f17, f18, f19, f20, f21;
     plane_t f22, f23, f24, f25, f26, f27, f28, f29, f30, f31;
