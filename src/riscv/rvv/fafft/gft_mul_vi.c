@@ -5,7 +5,7 @@
 #include <stdint.h>
 
 // x 0x2e597
-void fafft_gft_mul_v17( uint64_t * out[32] , const uint64_t * in[32] ) {
+void fafft_gft_mul_v17( uint64_t out[32] , const uint64_t in[32] ) {
 const uint64_t * b = in;
 uint64_t g0,g1,g2,g3, g4,g5,g6,g7, g8,g9,g10,g11;
 uint64_t f0,f1,f2,f3, f4,f5,f6,f7, f8,f9,f10,f11;
@@ -694,7 +694,7 @@ out[31] = f31;
 }
 
 // x 0x52257
-void fafft_gft_mul_v18( uint64_t * out[32] , const uint64_t * in[32] ) {
+void fafft_gft_mul_v18( uint64_t out[32] , const uint64_t in[32] ) {
 const uint64_t * b = in;
 uint64_t g0,g1,g2,g3, g4,g5,g6,g7, g8,g9,g10,g11;
 uint64_t f0,f1,f2,f3, f4,f5,f6,f7, f8,f9,f10,f11;
@@ -1357,7 +1357,7 @@ out[31] = f31;
 }
 
 // x 0x9b170
-void fafft_gft_mul_v19( uint64_t * out[32] , const uint64_t * in[32] ) {
+void fafft_gft_mul_v19( uint64_t out[32] , const uint64_t in[32] ) {
 const uint64_t * b = in;
 uint64_t g0,g1,g2,g3, g4,g5,g6,g7, g8,g9,g10,g11;
 uint64_t f0,f1,f2,f3, f4,f5,f6,f7, f8,f9,f10,f11;
@@ -2096,7 +2096,7 @@ out[31] = f31;
 }
 
 // x 0x13572f
-void fafft_gft_mul_v20( uint64_t * out[32] , const uint64_t * in[32] ) {
+void fafft_gft_mul_v20( uint64_t out[32] , const uint64_t in[32] ) {
 const uint64_t * b = in;
 uint64_t g0,g1,g2,g3, g4,g5,g6,g7, g8,g9,g10,g11;
 uint64_t f0,f1,f2,f3, f4,f5,f6,f7, f8,f9,f10,f11;
@@ -2827,7 +2827,7 @@ out[31] = f31;
 }
 
 // x 0x2c7d24
-void fafft_gft_mul_v21( uint64_t * out[32] , const uint64_t * in[32] ) {
+void fafft_gft_mul_v21( uint64_t out[32] , const uint64_t in[32] ) {
 const uint64_t * b = in;
 uint64_t g0,g1,g2,g3, g4,g5,g6,g7, g8,g9,g10,g11;
 uint64_t f0,f1,f2,f3, f4,f5,f6,f7, f8,f9,f10,f11;
@@ -3582,7 +3582,7 @@ out[31] = f31;
 }
 
 // x 0x573762
-void fafft_gft_mul_v22( uint64_t * out[32] , const uint64_t * in[32] ) {
+void fafft_gft_mul_v22( uint64_t out[32] , const uint64_t in[32] ) {
 const uint64_t * b = in;
 uint64_t g0,g1,g2,g3, g4,g5,g6,g7, g8,g9,g10,g11;
 uint64_t f0,f1,f2,f3, f4,f5,f6,f7, f8,f9,f10,f11;
@@ -4340,7 +4340,7 @@ out[31] = f31;
 }
 
 // x 0x92f9fa
-void fafft_gft_mul_v23( uint64_t * out[32] , const uint64_t * in[32] ) {
+void fafft_gft_mul_v23( uint64_t out[32] , const uint64_t in[32] ) {
 const uint64_t * b = in;
 uint64_t g0,g1,g2,g3, g4,g5,g6,g7, g8,g9,g10,g11;
 uint64_t f0,f1,f2,f3, f4,f5,f6,f7, f8,f9,f10,f11;
@@ -5092,7 +5092,7 @@ out[31] = f31;
 }
 
 // x 0x12f1b8d
-void fafft_gft_mul_v24( uint64_t * out[32] , const uint64_t * in[32] ) {
+void fafft_gft_mul_v24( uint64_t out[32] , const uint64_t in[32] ) {
 const uint64_t * b = in;
 uint64_t g0,g1,g2,g3, g4,g5,g6,g7, g8,g9,g10,g11;
 uint64_t f0,f1,f2,f3, f4,f5,f6,f7, f8,f9,f10,f11;
@@ -5932,7 +5932,7 @@ out[31] = f31;
 }
 
 // x 0x2e55791
-void fafft_gft_mul_v25( uint64_t * out[32] , const uint64_t * in[32] ) {
+void fafft_gft_mul_v25( uint64_t out[32] , const uint64_t in[32] ) {
 const uint64_t * b = in;
 uint64_t g0,g1,g2,g3, g4,g5,g6,g7, g8,g9,g10,g11;
 uint64_t f0,f1,f2,f3, f4,f5,f6,f7, f8,f9,f10,f11;
@@ -6765,7 +6765,7 @@ out[31] = g9;
 }
 
 // x 0x52267c0
-void fafft_gft_mul_v26( uint64_t * out[32] , const uint64_t * in[32] ) {
+void fafft_gft_mul_v26( uint64_t out[32] , const uint64_t in[32] ) {
 const uint64_t * b = in;
 uint64_t g0,g1,g2,g3, g4,g5,g6,g7, g8,g9,g10,g11;
 uint64_t f0,f1,f2,f3, f4,f5,f6,f7, f8,f9,f10,f11;
@@ -7589,7 +7589,7 @@ out[31] = g9;
 }
 
 // x 0x9b120be
-void fafft_gft_mul_v27( uint64_t * out[32] , const uint64_t * in[32] ) {
+void fafft_gft_mul_v27( uint64_t out[32] , const uint64_t in[32] ) {
 const uint64_t * b = in;
 uint64_t g0,g1,g2,g3, g4,g5,g6,g7, g8,g9,g10,g11;
 uint64_t f0,f1,f2,f3, f4,f5,f6,f7, f8,f9,f10,f11;
