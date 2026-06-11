@@ -25,6 +25,7 @@ set(VEC_TEST_SRC  ${TESTS_DIR}/test_vector.c)
 set(MAIN_TEST_SRC ${TESTS_DIR}/tests_main.c)
 set(GF2X_NTL_SRC  ${TESTS_DIR}/test_vect_mul.cpp)
 set(GF32V_TOWER_TEST_SRC ${TESTS_DIR}/test_gf32v_tower.c)
+set(GFT_MUL_VI_GF32V_TEST_SRC ${TESTS_DIR}/test_gft_mul_vi_gf32v.c)
 
 set(COMMON_INCLUDES
         ${CMAKE_SOURCE_DIR}/src/common
@@ -160,6 +161,33 @@ foreach(param_variant IN LISTS VARIANTS)
 
         add_test(NAME ${gf32v_tower_exe_name} COMMAND ${gf32v_tower_exe_name})
         set_tests_properties(${gf32v_tower_exe_name} PROPERTIES LABELS "unit;gf32v;rvv")
+
+        set(gft_mul_vi_gf32v_exe_name test_gft_mul_vi_gf32v_${safe_param}_${HQC_RISCV_IMPL})
+
+        add_executable(${gft_mul_vi_gf32v_exe_name}
+                ${GFT_MUL_VI_GF32V_TEST_SRC}
+                ${CMAKE_SOURCE_DIR}/src/riscv/rvv/fafft/gft_mul_vi_gf32v.c
+                ${CMAKE_SOURCE_DIR}/src/riscv/rvv/fafft/gf32v_tower.c
+                ${CMAKE_SOURCE_DIR}/src/riscv/rvv/fafft/gf32v_tower.S
+        )
+
+        target_link_libraries(${gft_mul_vi_gf32v_exe_name} PRIVATE
+                fips202
+        )
+
+        target_compile_definitions(${gft_mul_vi_gf32v_exe_name} PRIVATE
+                RVV_MODE
+        )
+
+        target_include_directories(${gft_mul_vi_gf32v_exe_name} PRIVATE
+                ${COMMON_INCLUDES}
+                ${PARAM_INCLUDES}
+                ${CMAKE_SOURCE_DIR}/src/riscv/rvv/${param_variant}
+                ${CMAKE_SOURCE_DIR}/src/riscv/rvv/fafft
+        )
+
+        add_test(NAME ${gft_mul_vi_gf32v_exe_name} COMMAND ${gft_mul_vi_gf32v_exe_name})
+        set_tests_properties(${gft_mul_vi_gf32v_exe_name} PROPERTIES LABELS "unit;gft_mul_vi;gf32v;rvv")
     endif()
     # end temporary
 
