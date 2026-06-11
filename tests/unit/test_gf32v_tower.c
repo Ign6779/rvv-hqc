@@ -219,6 +219,48 @@ static void ref_gf232_mul(gf32v_array *out, const gf32v_array *a, const gf32v_ar
     ref_xor_inplace(o, red, 16);
 }
 
+static void ref_gf32v_mul_gf16(gf32v_array *out, const gf32v_array *a, const gf32v_array *b) {
+    uint64_t *o = &out->plane[0][0];
+    const uint64_t *aa = &a->plane[0][0];
+    const uint64_t *bb = &b->plane[0][0];
+
+    for (unsigned chunk = 0; chunk < 8; chunk++) {
+        ref_gf16_mul(
+            o  + chunk * 4 * GF32V_WORDS,
+            aa + chunk * 4 * GF32V_WORDS,
+            bb
+        );
+    }
+}
+
+static void ref_gf32v_mul_gf256(gf32v_array *out, const gf32v_array *a, const gf32v_array *b) {
+    uint64_t *o = &out->plane[0][0];
+    const uint64_t *aa = &a->plane[0][0];
+    const uint64_t *bb = &b->plane[0][0];
+
+    for (unsigned chunk = 0; chunk < 4; chunk++) {
+        ref_gf256_mul(
+            o  + chunk * 8 * GF32V_WORDS,
+            aa + chunk * 8 * GF32V_WORDS,
+            bb
+        );
+    }
+}
+
+static void ref_gf32v_mul_gf216(gf32v_array *out, const gf32v_array *a, const gf32v_array *b) {
+    uint64_t *o = &out->plane[0][0];
+    const uint64_t *aa = &a->plane[0][0];
+    const uint64_t *bb = &b->plane[0][0];
+
+    for (unsigned chunk = 0; chunk < 2; chunk++) {
+        ref_gf216_mul(
+            o  + chunk * 16 * GF32V_WORDS,
+            aa + chunk * 16 * GF32V_WORDS,
+            bb
+        );
+    }
+}
+
 static void zero_gf32v(gf32v_array *out) {
     memset(out, 0, sizeof(*out));
 }
@@ -483,6 +525,33 @@ int main(void) {
             return 1;
         }
 
+        gf32v_mul_gf16(&rvv, &a, &b);
+        ref_gf32v_mul_gf16(&ref, &a, &b);
+
+        if (!eq_gf32v(&rvv, &ref)) {
+            printf("FAIL mul_gf16 test %u\n", t);
+            print_first_diff(&rvv, &ref);
+            return 1;
+        }
+
+        gf32v_mul_gf256(&rvv, &a, &b);
+        ref_gf32v_mul_gf256(&ref, &a, &b);
+
+        if (!eq_gf32v(&rvv, &ref)) {
+            printf("FAIL mul_gf256 test %u\n", t);
+            print_first_diff(&rvv, &ref);
+            return 1;
+        }
+
+        gf32v_mul_gf216(&rvv, &a, &b);
+        ref_gf32v_mul_gf216(&ref, &a, &b);
+
+        if (!eq_gf32v(&rvv, &ref)) {
+            printf("FAIL mul_gf216 test %u\n", t);
+            print_first_diff(&rvv, &ref);
+            return 1;
+        }
+
         gf32v_array expected_alias;
         gf32v_array actual_alias;
 
@@ -535,6 +604,76 @@ int main(void) {
 
         if (!eq_gf32v(&actual_alias, &expected_alias)) {
             printf("FAIL mul_0x5 alias test %u\n", t);
+            print_first_diff(&actual_alias, &expected_alias);
+            return 1;
+        }
+
+
+        /*
+         * Alias tests for gf32v_mul_gf16.
+         */
+        ref_gf32v_mul_gf16(&expected_alias, &a, &b);
+
+        actual_alias = a;
+        gf32v_mul_gf16(&actual_alias, &actual_alias, &b);
+
+        if (!eq_gf32v(&actual_alias, &expected_alias)) {
+            printf("FAIL mul_gf16 alias out==a test %u\n", t);
+            print_first_diff(&actual_alias, &expected_alias);
+            return 1;
+        }
+
+        actual_alias = b;
+        gf32v_mul_gf16(&actual_alias, &a, &actual_alias);
+
+        if (!eq_gf32v(&actual_alias, &expected_alias)) {
+            printf("FAIL mul_gf16 alias out==b test %u\n", t);
+            print_first_diff(&actual_alias, &expected_alias);
+            return 1;
+        }
+
+        /*
+         * Alias tests for gf32v_mul_gf256.
+         */
+        ref_gf32v_mul_gf256(&expected_alias, &a, &b);
+
+        actual_alias = a;
+        gf32v_mul_gf256(&actual_alias, &actual_alias, &b);
+
+        if (!eq_gf32v(&actual_alias, &expected_alias)) {
+            printf("FAIL mul_gf256 alias out==a test %u\n", t);
+            print_first_diff(&actual_alias, &expected_alias);
+            return 1;
+        }
+
+        actual_alias = b;
+        gf32v_mul_gf256(&actual_alias, &a, &actual_alias);
+
+        if (!eq_gf32v(&actual_alias, &expected_alias)) {
+            printf("FAIL mul_gf256 alias out==b test %u\n", t);
+            print_first_diff(&actual_alias, &expected_alias);
+            return 1;
+        }
+
+        /*
+         * Alias tests for gf32v_mul_gf216.
+         */
+        ref_gf32v_mul_gf216(&expected_alias, &a, &b);
+
+        actual_alias = a;
+        gf32v_mul_gf216(&actual_alias, &actual_alias, &b);
+
+        if (!eq_gf32v(&actual_alias, &expected_alias)) {
+            printf("FAIL mul_gf216 alias out==a test %u\n", t);
+            print_first_diff(&actual_alias, &expected_alias);
+            return 1;
+        }
+
+        actual_alias = b;
+        gf32v_mul_gf216(&actual_alias, &a, &actual_alias);
+
+        if (!eq_gf32v(&actual_alias, &expected_alias)) {
+            printf("FAIL mul_gf216 alias out==b test %u\n", t);
             print_first_diff(&actual_alias, &expected_alias);
             return 1;
         }
