@@ -938,3 +938,159 @@ gf32v_rvv_mul16_8:
     ret
 
     .size gf32v_rvv_mul16_8, .-gf32v_rvv_mul16_8
+
+
+    .globl gf32v_rvv_mul_gf16
+    .type  gf32v_rvv_mul_gf16, @function
+gf32v_rvv_mul_gf16:
+    beqz        a3, 2f
+
+    addi        sp, sp, -64
+    sd          ra, 56(sp)
+    sd          s0, 48(sp)
+    sd          s1, 40(sp)
+    sd          s2, 32(sp)
+    sd          s3, 24(sp)
+    sd          s4, 16(sp)
+    sd          s5, 8(sp)
+    sd          s6, 0(sp)
+
+    mv          s0, a0          # out
+    mv          s1, a1          # a
+    mv          s2, a2          # b_gf16
+    mv          s3, a3          # nwords
+
+    slli        s4, s3, 3      # bytes per plane = nwords * 8
+    slli        s5, s4, 2      # bytes per GF16 chunk = 4 planes
+    li          s6, 8          # 32 / 4 chunks
+
+1:
+    mv          a0, s0
+    mv          a1, s1
+    mv          a2, s2
+    mv          a3, s3
+    call        gf32v_rvv_mul16
+
+    add         s0, s0, s5
+    add         s1, s1, s5
+    addi        s6, s6, -1
+    bnez        s6, 1b
+
+    ld          s6, 0(sp)
+    ld          s5, 8(sp)
+    ld          s4, 16(sp)
+    ld          s3, 24(sp)
+    ld          s2, 32(sp)
+    ld          s1, 40(sp)
+    ld          s0, 48(sp)
+    ld          ra, 56(sp)
+    addi        sp, sp, 64
+
+2:
+    ret
+
+    .size gf32v_rvv_mul_gf16, .-gf32v_rvv_mul_gf16
+
+
+    .globl gf32v_rvv_mul_gf256
+    .type  gf32v_rvv_mul_gf256, @function
+gf32v_rvv_mul_gf256:
+    beqz        a3, 2f
+
+    addi        sp, sp, -64
+    sd          ra, 56(sp)
+    sd          s0, 48(sp)
+    sd          s1, 40(sp)
+    sd          s2, 32(sp)
+    sd          s3, 24(sp)
+    sd          s4, 16(sp)
+    sd          s5, 8(sp)
+    sd          s6, 0(sp)
+
+    mv          s0, a0          # out
+    mv          s1, a1          # a
+    mv          s2, a2          # b_gf256
+    mv          s3, a3          # nwords
+
+    slli        s4, s3, 3      # bytes per plane = nwords * 8
+    slli        s5, s4, 3      # bytes per GF256 chunk = 8 planes
+    li          s6, 4          # 32 / 8 chunks
+
+1:
+    mv          a0, s0
+    mv          a1, s1
+    mv          a2, s2
+    mv          a3, s3
+    call        gf32v_rvv_mul256
+
+    add         s0, s0, s5
+    add         s1, s1, s5
+    addi        s6, s6, -1
+    bnez        s6, 1b
+
+    ld          s6, 0(sp)
+    ld          s5, 8(sp)
+    ld          s4, 16(sp)
+    ld          s3, 24(sp)
+    ld          s2, 32(sp)
+    ld          s1, 40(sp)
+    ld          s0, 48(sp)
+    ld          ra, 56(sp)
+    addi        sp, sp, 64
+
+2:
+    ret
+
+    .size gf32v_rvv_mul_gf256, .-gf32v_rvv_mul_gf256
+
+
+    .globl gf32v_rvv_mul_gf216
+    .type  gf32v_rvv_mul_gf216, @function
+gf32v_rvv_mul_gf216:
+    beqz        a3, 2f
+
+    addi        sp, sp, -64
+    sd          ra, 56(sp)
+    sd          s0, 48(sp)
+    sd          s1, 40(sp)
+    sd          s2, 32(sp)
+    sd          s3, 24(sp)
+    sd          s4, 16(sp)
+    sd          s5, 8(sp)
+    sd          s6, 0(sp)
+
+    mv          s0, a0          # out
+    mv          s1, a1          # a
+    mv          s2, a2          # b_gf216
+    mv          s3, a3          # nwords
+
+    slli        s4, s3, 3      # bytes per plane = nwords * 8
+    slli        s5, s4, 4      # bytes per GF216 chunk = 16 planes
+    li          s6, 2          # 32 / 16 chunks
+
+1:
+    mv          a0, s0
+    mv          a1, s1
+    mv          a2, s2
+    mv          a3, s3
+    call        gf32v_rvv_mul216
+
+    add         s0, s0, s5
+    add         s1, s1, s5
+    addi        s6, s6, -1
+    bnez        s6, 1b
+
+    ld          s6, 0(sp)
+    ld          s5, 8(sp)
+    ld          s4, 16(sp)
+    ld          s3, 24(sp)
+    ld          s2, 32(sp)
+    ld          s1, 40(sp)
+    ld          s0, 48(sp)
+    ld          ra, 56(sp)
+    addi        sp, sp, 64
+
+2:
+    ret
+
+    .size gf32v_rvv_mul_gf216, .-gf32v_rvv_mul_gf216

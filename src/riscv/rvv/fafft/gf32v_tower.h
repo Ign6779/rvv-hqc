@@ -12,4 +12,9 @@ void gf32v_square(gf32v_array *out, const gf32v_array *a);
 void gf32v_mul_0x2(gf32v_array *out, const gf32v_array *a);
 void gf32v_mul_0x5(gf32v_array *out, const gf32v_array *a);
 
+/* for fftlch*/
+void gf32v_mul_gf16(gf32v_array *out, const gf32v_array *a, const gf32v_array *b);
+void gf32v_mul_gf256(gf32v_array *out, const gf32v_array *a, const gf32v_array *b);
+void gf32v_mul_gf216(gf32v_array *out, const gf32v_array *a, const gf32v_array *b);
+
 #endif

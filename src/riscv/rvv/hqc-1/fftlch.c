@@ -1,19 +1,13 @@
 #include "fftlch.h"
 
+#include <stdint.h>
+
+#include "fftlch_consts.h"
 #include "gf32v.h"
+#include "gft_mul_vi_gf32v.h"
 
-void fafft_fftlch(gf32v_array *out, const gf32v_array *in) {
-    /*
-     * Placeholder only.
-     * Real implementation must perform the forward linearized Cantor-basis FFT.
-     */
-    gf32v_copy(out, in);
-}
+//might move these to fftlch_consts
+#define LOW32   UINT64_C(0x00000000ffffffff)
+#define HIGH32  UINT64_C(0xffffffff00000000)
+#define FULL64  UINT64_C(0xffffffffffffffff)
 
-void fafft_inverse_fftlch(gf32v_array *out, const gf32v_array *in) {
-    /*
-     * Placeholder only.
-     * Real implementation must perform the inverse linearized Cantor-basis FFT.
-     */
-    gf32v_copy(out, in);
-}
