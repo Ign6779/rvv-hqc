@@ -5,7 +5,7 @@
 
 typedef void (*fafft_gft_mul_vi_gf32v_fn)(gf32v_array *out, const gf32v_array *in, unsigned w);
 
-void fafft_gft_mul_v17_gf32v(gf32v_array *out, const gf32v_array *in);
+void fafft_gft_mul_v17_gf32v(gf32v_array *out, const gf32v_array *in, unsigned w);
 void fafft_gft_mul_v18_gf32v(gf32v_array *out, const gf32v_array *in, unsigned w);
 void fafft_gft_mul_v19_gf32v(gf32v_array *out, const gf32v_array *in, unsigned w);
 void fafft_gft_mul_v20_gf32v(gf32v_array *out, const gf32v_array *in, unsigned w);
