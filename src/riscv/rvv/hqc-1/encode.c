@@ -21,25 +21,13 @@
 
 typedef uint64_t plane_t[GF32V_WORDS];
 
-static inline void plane_copy(uint64_t dst[GF32V_WORDS],
-                              const uint64_t src[GF32V_WORDS])
-{
-    for (size_t i = 0; i < GF32V_WORDS; i++) {
-        dst[i] = src[i];
-    }
-}
+void fafft_plane_copy(uint64_t *dst, const uint64_t *src);
+void fafft_plane_xor(uint64_t *dst, const uint64_t *src);
 
-static inline void plane_xor(uint64_t dst[GF32V_WORDS],
-                             const uint64_t src[GF32V_WORDS])
-{
-    for (size_t i = 0; i < GF32V_WORDS; i++) {
-        dst[i] ^= src[i];
-    }
-}
+#define plane_copy(dst, src) fafft_plane_copy((dst), (src))
+#define plane_xor(dst, src)  fafft_plane_xor((dst), (src))
 
-static void encode_circuit_u64(uint64_t out[32][GF32V_WORDS],
-                               const uint64_t b[32][GF32V_WORDS])
-{
+static void encode_circuit_u64(uint64_t out[32][GF32V_WORDS], const uint64_t b[32][GF32V_WORDS]) {
     plane_t g0, g1, g2, g3, g4, g5, g6, g7, g8, g9, g10, g11;
     plane_t f0, f1, f2, f4, f5, f6, f7, f8, f9, f10, f11;
     plane_t f12, f14, f15, f16, f17, f18, f19, f20, f22, f23;
@@ -365,17 +353,14 @@ static void encode_circuit_u64(uint64_t out[32][GF32V_WORDS],
     plane_copy(out[31], f31);
 }
 
-void fafft_encode(gf32v_array *out, const uint64_t *poly)
-{
+void fafft_encode(gf32v_array *out, const uint64_t *poly) {
     const uint64_t (*in_planes)[GF32V_WORDS];
 
     in_planes = (const uint64_t (*)[GF32V_WORDS])poly;
     encode_circuit_u64(out->plane, in_planes);
 }
 
-static void decode_circuit_u64(uint64_t out[32][GF32V_WORDS],
-                               const uint64_t b[32][GF32V_WORDS])
-{
+static void decode_circuit_u64(uint64_t out[32][GF32V_WORDS], const uint64_t b[32][GF32V_WORDS]) {
     plane_t g0, g1, g2, g3, g4, g5, g6, g7, g8, g9, g10, g11;
     (void)sizeof(g11); //compiler complains otherwise
     plane_t f0, f1, f2, f3, f4, f5, f6, f7, f8, f9, f10, f11;
@@ -924,8 +909,7 @@ static void decode_circuit_u64(uint64_t out[32][GF32V_WORDS],
     plane_copy(out[31], f31);
 }
 
-void fafft_decode(uint64_t *poly, const gf32v_array *in)
-{
+void fafft_decode(uint64_t *poly, const gf32v_array *in) {
     uint64_t (*out_planes)[GF32V_WORDS];
 
     out_planes = (uint64_t (*)[GF32V_WORDS])poly;
