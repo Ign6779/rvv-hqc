@@ -10,6 +10,7 @@
 #include "fafft_params.h"
 
 #include <stdint.h>
+#include <string.h>
 
 // I aint dealing with the others for now
 #if FAFFT_N_BITS != 65536
@@ -20,7 +21,13 @@ static void fafft_forward(gf32v_array *out, const uint64_t *in) {
     static uint64_t basis[FAFFT_N_WORDS];
     static gf32v_array encoded;
 
-    fafft_basis_cvt(basis, in);
+    /* Inputs are VEC_N_SIZE_64 words (PARAM_N bits); the FAFFT works on
+     * FAFFT_N_WORDS words, so zero-pad rather than over-reading the caller's
+     * buffer. */
+    memset(basis, 0, sizeof(basis));
+    memcpy(basis, in, VEC_N_SIZE_64 * sizeof(uint64_t));
+    fafft_basis_cvt_inplace(basis);
+
     fafft_encode(&encoded, basis);
     fafft_fftlch(out, &encoded);
 }
