@@ -41,7 +41,7 @@ extern void sparse_rvv_xor(uint64_t *dst, const uint64_t *src, uint64_t nwords);
 /* Number of independent accumulators used to break the XOR dependency chain
  * across successive rotations (point 3). Must be a power of two. Set to 1 to
  * recover the single-accumulator version for A/B benchmarking. */
-#define SPARSE_NACC 4
+#define SPARSE_NACC 1
 
 void sparse_mul(uint64_t *o, const uint64_t *a1, const uint64_t *a2) {
     uint64_t B[SPARSE_B_WORDS];
