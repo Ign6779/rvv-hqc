@@ -1,9 +1,8 @@
+#include "rvv_macros.h"
+
     .text
     .align 2
 
-.macro VSETVLI_E16M1 rd, rs1
-    .insn i 0x57, 0x7, \rd, \rs1, 8
-.endm
 
 /* Carryless shift-add of bit \sh of b (v2) into acc v3, base a in v1. */
 .macro CLMUL_STEP sh
@@ -58,7 +57,7 @@ gf_carryless_mul_vect:
     beqz    a3, 2f
     li      t3, 0xFF
 1:
-    VSETVLI_E16M1 t0, a3
+    VSETVLI_E16_M1(t0, a3)
     vle16.v v1, (a1)
     vle16.v v2, (a2)
     vand.vx v1, v1, t3
@@ -83,7 +82,7 @@ gf_reduce_vect:
     beqz    a2, 2f
     li      t3, 0xFF
 1:
-    VSETVLI_E16M1 t0, a2
+    VSETVLI_E16_M1(t0, a2)
     vle16.v v3, (a1)
     REDUCE_ALL
     vse16.v v3, (a0)
@@ -104,7 +103,7 @@ gf_mul_vect:
     beqz    a3, 2f
     li      t3, 0xFF
 1:
-    VSETVLI_E16M1 t0, a3
+    VSETVLI_E16_M1(t0, a3)
     vle16.v v1, (a1)
     vle16.v v2, (a2)
     vand.vx v1, v1, t3
@@ -130,7 +129,7 @@ gf_square_vect:
     beqz    a2, 2f
     li      t3, 0xFF
 1:
-    VSETVLI_E16M1 t0, a2
+    VSETVLI_E16_M1(t0, a2)
     vle16.v v1, (a1)
     vand.vx v3, v1, t3         /* x = a & 0xFF                       */
     vsll.vi v4, v3, 4          /* spread 8 bits to even positions:   */
