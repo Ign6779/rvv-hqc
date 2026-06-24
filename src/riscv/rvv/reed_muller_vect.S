@@ -19,7 +19,8 @@ rm_encode_vect:
     mv      a5, a1
 1:
     VSETVLI_E32_M4(t0, a3)
-    vlbu.v  v4, (a5)
+    vle8.v   v8, (a5)        /* load VL bytes (EEW=8 -> EMUL=m1) */
+    vzext.vf4 v4, v8         /* zero-extend bytes to 32-bit elements */
 
     vsrl.vi v8, v4, 7
     vand.vi v8, v8, 1
