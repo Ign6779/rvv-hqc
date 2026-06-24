@@ -3,7 +3,7 @@
     .text
     .align 2
 
-/* void rm_encode_vect(uint32_t *temp, const uint8_t *msg, long n1) */
+/* void rm_encode_vect(uint32_t *temp, const uint32_t *msg, long n1) */
     .globl rm_encode_vect
     .type  rm_encode_vect, @function
 rm_encode_vect:
@@ -19,8 +19,7 @@ rm_encode_vect:
     mv      a5, a1
 1:
     VSETVLI_E32_M4(t0, a3)
-    vle8.v   v8, (a5)        /* load VL bytes (EEW=8 -> EMUL=m1) */
-    vzext.vf4 v4, v8         /* zero-extend bytes to 32-bit elements */
+    vle32.v v4, (a5)
 
     vsrl.vi v8, v4, 7
     vand.vi v8, v8, 1
@@ -77,7 +76,7 @@ rm_encode_vect:
 
     slli    a6, t0, 2
     add     a4, a4, a6
-    add     a5, a5, t0
+    add     a5, a5, a6
     sub     a3, a3, t0
     bnez    a3, 1b
 2:

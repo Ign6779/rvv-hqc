@@ -11,7 +11,7 @@
 
 #define MULTIPLICITY CEIL_DIVIDE(PARAM_N2, 128)
 
-extern void rm_encode_vect(uint32_t *temp, const uint8_t *msg, long n1);
+extern void rm_encode_vect(uint32_t *temp, const uint32_t *msg, long n1);
 extern void rm_hadamard_vect(int16_t *a, int16_t *b, long n1);
 extern void rm_find_peaks_vect(int16_t *out, const int16_t *transform, long n1);
 
@@ -34,8 +34,13 @@ void reed_muller_encode(uint64_t *cdw, const uint64_t *msg) {
     const uint8_t *message_array = (const uint8_t *)msg;
     rm_codeword_t *codeArray = (rm_codeword_t *)cdw;
     static uint32_t temp[4 * VEC_N1_SIZE_BYTES];
+    static uint32_t msg32[VEC_N1_SIZE_BYTES];
 
-    rm_encode_vect(temp, message_array, VEC_N1_SIZE_BYTES);
+    for (long i = 0; i < VEC_N1_SIZE_BYTES; i++) {
+        msg32[i] = message_array[i];
+    }
+
+    rm_encode_vect(temp, msg32, VEC_N1_SIZE_BYTES);
 
     for (long i = 0; i < VEC_N1_SIZE_BYTES; i++) {
         rm_codeword_t cw;
