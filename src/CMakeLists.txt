@@ -1,8 +1,10 @@
 cmake_minimum_required(VERSION 3.21)
 project(hqc-src C ASM)
 
-# List of HQC parameter variants
-set(VARIANTS "hqc-1;hqc-3;hqc-5" CACHE INTERNAL "List of variants")
+# List of HQC parameter variants (override with -DVARIANTS="hqc-1" etc.)
+if(NOT DEFINED VARIANTS)
+    set(VARIANTS "hqc-1;hqc-3;hqc-5")
+endif()
 
 # 1) cross-arch common sources
 file(GLOB COMMON_SOURCES
