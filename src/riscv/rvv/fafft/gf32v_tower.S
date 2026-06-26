@@ -847,7 +847,7 @@ gf32v_rvv_mul16:
     vxor.vv     v22, v10, v14       /* sb1 = b1^b3 */
 
     /* Middle GF(2^2) product (sa0,sa1)*(sb0,sb1) -> p2_0=v18, p2_1=v16.
-     * Frees sa/sb regs (v16,v18,v20,v22) as it overwrites them last. */
+     * Frees sa*/sb* (v16,v18,v20,v22) as it overwrites them last. */
     vxor.vv     v24, v20, v22       /* t  = sb0^sb1 */
     vand.vv     v26, v16, v20       /* sa0&sb0 */
     vand.vv     v28, v18, v22       /* sa1&sb1 */
