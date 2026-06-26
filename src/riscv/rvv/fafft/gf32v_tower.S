@@ -816,89 +816,73 @@ gf32v_rvv_mul16:
     mv          t4, a3
 
 1:
-    VSETVLI_E64_M2(t0, t4)
+    VSETVLI_E64_M1(t0, t4)
     slli        t1, t0, 3
 
-    /* Load the 4 a-planes (a0..a3) and 4 b-planes (b0..b3).
-     * LMUL=2 register groups: v0,v2,v4,v6 = a0,a1,a2,a3 ; v8,v10,v12,v14 = b0..b3.
-     * The whole routine uses only the 16 even-numbered LMUL=2 groups v0..v30. */
     add         t2, a1, t6
-    vle64.v     v0, (t2)            /* a0 */
+    vle64.v       v0, (t2)
     add         t2, t2, t5
-    vle64.v     v2, (t2)            /* a1 */
+    vle64.v       v1, (t2)
     add         t2, t2, t5
-    vle64.v     v4, (t2)            /* a2 */
+    vle64.v       v2, (t2)
     add         t2, t2, t5
-    vle64.v     v6, (t2)            /* a3 */
+    vle64.v       v3, (t2)
 
     add         t3, a2, t6
-    vle64.v     v8, (t3)            /* b0 */
+    vle64.v       v4, (t3)
     add         t3, t3, t5
-    vle64.v     v10, (t3)           /* b1 */
+    vle64.v       v5, (t3)
     add         t3, t3, t5
-    vle64.v     v12, (t3)           /* b2 */
+    vle64.v       v6, (t3)
     add         t3, t3, t5
-    vle64.v     v14, (t3)           /* b3 */
+    vle64.v       v7, (t3)
 
-    /* Karatsuba sums for the middle sub-product. */
-    vxor.vv     v16, v0, v4         /* sa0 = a0^a2 */
-    vxor.vv     v18, v2, v6         /* sa1 = a1^a3 */
-    vxor.vv     v20, v8, v12        /* sb0 = b0^b2 */
-    vxor.vv     v22, v10, v14       /* sb1 = b1^b3 */
+    vxor.vv     v8, v0, v2
+    vxor.vv     v9, v1, v3
+    vxor.vv     v10, v4, v6
+    vxor.vv     v11, v5, v7
 
-    /* Middle GF(2^2) product (sa0,sa1)*(sb0,sb1) -> p2_0=v18, p2_1=v16.
-     * Frees sa*/sb* (v16,v18,v20,v22) as it overwrites them last. */
-    vxor.vv     v24, v20, v22       /* t  = sb0^sb1 */
-    vand.vv     v26, v16, v20       /* sa0&sb0 */
-    vand.vv     v28, v18, v22       /* sa1&sb1 */
-    vand.vv     v30, v16, v22       /* sa0&sb1 */
-    vand.vv     v16, v18, v24       /* sa1&t   (sa0 dead) */
-    vxor.vv     v18, v26, v28       /* p2_0 = sa0sb0 ^ sa1sb1 */
-    vxor.vv     v16, v30, v16       /* p2_1 = sa0sb1 ^ sa1t  */
+    vxor.vv     v12, v4, v5
+    vand.vv     v13, v0, v4
+    vand.vv     v14, v1, v5
+    vxor.vv     v20, v13, v14
+    vand.vv     v15, v0, v5
+    vand.vv     v16, v1, v12
+    vxor.vv     v21, v15, v16
 
-    /* Low GF(2^2) product (a0,a1)*(b0,b1) -> p1_0=v22, p1_1=v20.
-     * a0,a1,b0,b1 (v0,v2,v8,v10) dead afterwards. */
-    vxor.vv     v24, v8, v10        /* t = b0^b1 */
-    vand.vv     v26, v0, v8         /* a0&b0 */
-    vand.vv     v28, v2, v10        /* a1&b1 */
-    vand.vv     v30, v0, v10        /* a0&b1 */
-    vand.vv     v20, v2, v24        /* a1&t */
-    vxor.vv     v22, v26, v28       /* p1_0 */
-    vxor.vv     v20, v30, v20       /* p1_1 */
+    vxor.vv     v12, v10, v11
+    vand.vv     v13, v8, v10
+    vand.vv     v14, v9, v11
+    vxor.vv     v22, v13, v14
+    vand.vv     v15, v8, v11
+    vand.vv     v16, v9, v12
+    vxor.vv     v23, v15, v16
 
-    /* High GF(2^2) product (a2,a3)*(b2,b3) -> p3_0=v2, p3_1=v0.
-     * Reuses the now-dead v0,v2 for the results. */
-    vxor.vv     v24, v12, v14       /* t = b2^b3 */
-    vand.vv     v26, v4, v12        /* a2&b2 */
-    vand.vv     v28, v6, v14        /* a3&b3 */
-    vand.vv     v30, v4, v14        /* a2&b3 */
-    vand.vv     v0,  v6, v24        /* a3&t */
-    vxor.vv     v2,  v26, v28       /* p3_0 */
-    vxor.vv     v0,  v30, v0        /* p3_1 */
+    vxor.vv     v12, v6, v7
+    vand.vv     v13, v2, v6
+    vand.vv     v14, v3, v7
+    vxor.vv     v27, v13, v14
+    vand.vv     v15, v2, v7
+    vand.vv     v16, v3, v12
+    vxor.vv     v30, v15, v16
 
-    /* Combine (same as the LMUL=1 version):
-     *   out0 = p1_0 ^ p3_1
-     *   out1 = p1_1 ^ p3_1 ^ p3_0
-     *   out2 = p2_0 ^ p1_0
-     *   out3 = p2_1 ^ p1_1
-     * p1_0=v22 p1_1=v20 p2_0=v18 p2_1=v16 p3_0=v2 p3_1=v0. */
     add         a4, a0, t6
 
-    vxor.vv     v24, v22, v0        /* out0 */
-    vse64.v     v24, (a4)
+    vxor.vv     v31, v20, v30
+    vse64.v       v31, (a4)
     add         a4, a4, t5
 
-    vxor.vv     v26, v20, v0
-    vxor.vv     v26, v26, v2        /* out1 */
-    vse64.v     v26, (a4)
+    vxor.vv     v31, v21, v30
+    vxor.vv     v31, v31, v27
+    vse64.v       v31, (a4)
     add         a4, a4, t5
 
-    vxor.vv     v28, v18, v22       /* out2 */
-    vse64.v     v28, (a4)
+    vxor.vv     v31, v22, v20
+    vse64.v       v31, (a4)
     add         a4, a4, t5
 
-    vxor.vv     v30, v16, v20       /* out3 */
-    vse64.v     v30, (a4)
+    vxor.vv     v31, v23, v21
+    vse64.v       v31, (a4)
 
     add         t6, t6, t1
     sub         t4, t4, t0
@@ -920,32 +904,31 @@ gf32v_rvv_mul16_8:
     mv          t4, a2
 
 1:
-    VSETVLI_E64_M4(t0, t4)
+    VSETVLI_E64_M1(t0, t4)
     slli        t1, t0, 3
 
-    /* LMUL=4 groups: v0,v4,v8,v12 = a0,a1,a2,a3 ; temps v16,v20,v24 (7 of 8 groups). */
     add         t2, a1, t6
-    vle64.v     v0, (t2)            /* a0 */
+    vle64.v       v0, (t2)
     add         t2, t2, t5
-    vle64.v     v4, (t2)            /* a1 */
+    vle64.v       v1, (t2)
     add         t2, t2, t5
-    vle64.v     v8, (t2)            /* a2 */
+    vle64.v       v2, (t2)
     add         t2, t2, t5
-    vle64.v     v12, (t2)           /* a3 */
+    vle64.v       v3, (t2)
 
-    vxor.vv     v16, v8, v12        /* out0 = a2^a3 */
-    vxor.vv     v20, v4, v12        /* out2 = a1^a3 */
-    vxor.vv     v24, v0, v4         /* a0^a1 */
-    vxor.vv     v24, v24, v16       /* out3 = a0^a1^a2^a3 */
+    vxor.vv     v4, v2, v3
+    vxor.vv     v5, v1, v3
+    vxor.vv     v6, v0, v1
+    vxor.vv     v6, v6, v4
 
     add         a4, a0, t6
-    vse64.v     v16, (a4)           /* out0 */
+    vse64.v       v4, (a4)
     add         a4, a4, t5
-    vse64.v     v8, (a4)            /* out1 = a2 */
+    vse64.v       v2, (a4)
     add         a4, a4, t5
-    vse64.v     v20, (a4)           /* out2 */
+    vse64.v       v5, (a4)
     add         a4, a4, t5
-    vse64.v     v24, (a4)           /* out3 */
+    vse64.v       v6, (a4)
 
     add         t6, t6, t1
     sub         t4, t4, t0
