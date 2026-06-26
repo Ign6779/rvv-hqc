@@ -36,6 +36,8 @@
 #define VEC_N1_SIZE_64              CEIL_DIVIDE(PARAM_N1, 8)    ///< Size of array to store PARAM_N1 bits in 64-bit words
 #define VEC_N1N2_SIZE_64            CEIL_DIVIDE(PARAM_N1N2, 64) ///< Size of array to store PARAM_N1N2 bits in 64-bit words
 
+#define PARAM_N_MULT                18048      ///< Padded size of ring used for Toom-Karatsuba
+
 #define PARAM_DELTA                 15          ///< Define the error-correcting capacity (delta) of the Reed–Solomon code
 #define PARAM_M                     8           ///< Define the degree m of the Galois field GF(2^m)
 #define PARAM_GF_POLY               0x11D       ///< Generator polynomial of GF(2^PARAM_M) in hexadecimal form
