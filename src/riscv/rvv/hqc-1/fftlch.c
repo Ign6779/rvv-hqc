@@ -6,6 +6,7 @@
 #include "gf32v.h"
 #include "gf32v_tower.h"
 #include "gft_mul_vi_gf32v.h"
+#include "gft_mul_const_tables.h"
 
 /*
  * FFTLCH = the butterfly phase of the FAFFT, ported from BIKE's btfy_65536
@@ -115,6 +116,43 @@ static void build_tables(void) {
     tables_ready = 1;
 }
 
+/* LMUL=8 plane primitives (gf32v.S). */
+extern void gf32v_rvv_zero(gf32v_word_t *a, unsigned nwords);
+extern void gf32v_rvv_copy(gf32v_word_t *out, const gf32v_word_t *in, unsigned nwords);
+extern void gf32v_rvv_xor_inplace(gf32v_word_t *a, const gf32v_word_t *b, unsigned nwords);
+
+/*
+ * v-part: multiply the whole array by a fixed full-field constant (V17..V27).
+ * Instead of gf32v_mul_scalar (a full GF(2^32) Karatsuba multiply), apply the
+ * constant's plane-XOR table: out_plane[j] = XOR of the input planes selected
+ * by mask[j]. Each plane-XOR is a whole-plane operation handled by the LMUL=8
+ * vector primitives. Requires out != in (each output plane is built directly
+ * from input planes); the FFT always passes distinct buffers. Unknown constants
+ * fall back to the general multiply so behaviour is never silently wrong.
+ */
+static void mul_vconst(gf32v_array *out, const gf32v_array *in, uint32_t v_const) {
+    const uint32_t *mask = fafft_gft_const_table(v_const);
+    if (mask == 0) {
+        gf32v_mul_scalar(out, in, v_const);
+        return;
+    }
+    for (unsigned j = 0; j < GF32V_PLANES; j++) {
+        uint32_t bits = mask[j];
+        if (bits == 0) {
+            gf32v_rvv_zero(&out->plane[j][0], GF32V_WORDS);
+            continue;
+        }
+        unsigned first = (unsigned)__builtin_ctz(bits);
+        gf32v_rvv_copy(&out->plane[j][0], &in->plane[first][0], GF32V_WORDS);
+        bits &= bits - 1u;
+        while (bits) {
+            unsigned i = (unsigned)__builtin_ctz(bits);
+            bits &= bits - 1u;
+            gf32v_rvv_xor_inplace(&out->plane[j][0], &in->plane[i][0], GF32V_WORDS);
+        }
+    }
+}
+
 /*
  * Forward cross-word butterfly stage.
  *   ws      : word stride (partners are word w and word w+ws)
@@ -126,7 +164,7 @@ static void fwd_crossword(gf32v_array *A, unsigned ws, uint32_t v_const, const g
 
     /* beta*A computed for every word; only the values at the "hi" words are used,
      * and each hi word carries its own group's twiddle (see build_tables). */
-    gf32v_mul_scalar(&V, A, v_const);
+    mul_vconst(&V, A, v_const);
     gf32v_mul_gf256(&W, A, T);
     gf32v_add(&bA, &V, &W);
 
@@ -156,7 +194,7 @@ static void fwd_s5(gf32v_array *A) {
         }
     }
 
-    gf32v_mul_scalar(&VH, &H, V22);
+    mul_vconst(&VH, &H, V22);
     gf32v_mul_gf256(&WH, &H, &T_s5);
     gf32v_add(&bH, &VH, &WH); /* beta*hi, sitting in the low 32 bits */
 
@@ -182,7 +220,7 @@ static void fwd_intra(gf32v_array *A, uint64_t mask, unsigned shift, uint32_t v_
         }
     }
 
-    gf32v_mul_scalar(&VH, &H, v_const);
+    mul_vconst(&VH, &H, v_const);
     gf32v_mul_gf216(&WH, &H, T);
     gf32v_add(&bH, &VH, &WH); /* beta*hi, sitting in the lo lanes */
 
@@ -249,7 +287,7 @@ static void inv_crossword(gf32v_array *A, unsigned ws, uint32_t v_const, const g
     }
 
     /* beta*A on the array as it now stands (hi words hold the recovered hi). */
-    gf32v_mul_scalar(&V, A, v_const);
+    mul_vconst(&V, A, v_const);
     gf32v_mul_gf256(&W, A, T);
     gf32v_add(&bA, &V, &W);
 
@@ -283,7 +321,7 @@ static void inv_s5(gf32v_array *A) {
         }
     }
 
-    gf32v_mul_scalar(&VH, &H, V22);
+    mul_vconst(&VH, &H, V22);
     gf32v_mul_gf256(&WH, &H, &T_s5);
     gf32v_add(&bH, &VH, &WH);
 
@@ -313,7 +351,7 @@ static void inv_intra(gf32v_array *A, uint64_t mask, unsigned shift, uint32_t v_
         }
     }
 
-    gf32v_mul_scalar(&VH, &H, v_const);
+    mul_vconst(&VH, &H, v_const);
     gf32v_mul_gf216(&WH, &H, T);
     gf32v_add(&bH, &VH, &WH);
 
