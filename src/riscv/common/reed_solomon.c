@@ -112,18 +112,50 @@ void reed_solomon_encode(uint64_t *cdw, const uint64_t *msg) {
 }
 
 /**
+ * @brief Number of syndromes and codeword positions used by the syndrome step.
+ */
+#define RS_N_SYND (2 * PARAM_DELTA)   ///< number of syndromes
+#define RS_N_POS  (PARAM_N1 - 1)      ///< number of codeword positions accumulated
+
+
+extern void rs_syndromes_vect(uint16_t *synd, const uint8_t *cdw, const uint16_t *tbl, long n_synd, long n_pos);
+
+static uint16_t rs_synd_tbl[RS_N_POS * 8 * RS_N_SYND];
+static int rs_synd_tbl_ready = 0;
+
+
+static uint8_t gf_xtime(uint8_t v) {
+    uint16_t t = (uint16_t)v << 1;
+    if (t & 0x100) {
+        t ^= PARAM_GF_POLY;
+    }
+    return (uint8_t)t;
+}
+
+static void rs_build_synd_tbl(void) {
+    for (size_t p = 0; p < RS_N_POS; ++p) {
+        for (size_t i = 0; i < RS_N_SYND; ++i) {
+            uint8_t v = (uint8_t)alpha_ij_pow[i][p];
+            for (size_t k = 0; k < 8; ++k) {
+                rs_synd_tbl[(p * 8 + k) * RS_N_SYND + i] = v;
+                v = gf_xtime(v);
+            }
+        }
+    }
+    rs_synd_tbl_ready = 1;
+}
+
+/**
  * @brief Computes 2 * PARAM_DELTA syndromes
  *
  * @param[out] syndromes Array of size 2 * PARAM_DELTA receiving the computed syndromes
  * @param[in] cdw Array of size PARAM_N1 storing the received vector
  */
 void compute_syndromes(uint16_t *syndromes, uint8_t *cdw) {
-    for (size_t i = 0; i < 2 * PARAM_DELTA; ++i) {
-        for (size_t j = 1; j < PARAM_N1; ++j) {
-            syndromes[i] ^= gf_mul(cdw[j], alpha_ij_pow[i][j - 1]);
-        }
-        syndromes[i] ^= cdw[0];
+    if (!rs_synd_tbl_ready) {
+        rs_build_synd_tbl();
     }
+    rs_syndromes_vect(syndromes, cdw, rs_synd_tbl, RS_N_SYND, RS_N_POS);
 }
 
 /**
