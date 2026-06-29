@@ -30,6 +30,7 @@
 
 /* RVV kernels (sparse_mul.S). All are vector-length agnostic. */
 extern void sparse_rvv_rotate_xor(uint64_t *acc, const uint64_t *win, uint64_t bo, uint64_t nwords);
+extern void sparse_rvv_rotate_store(uint64_t *acc, const uint64_t *win, uint64_t bo, uint64_t nwords);
 extern void sparse_rvv_or_shl(uint64_t *dst, const uint64_t *src, uint64_t sh, uint64_t nwords);
 extern void sparse_rvv_or_shr(uint64_t *dst, const uint64_t *src, uint64_t sh, uint64_t nwords);
 extern void sparse_rvv_xor(uint64_t *dst, const uint64_t *src, uint64_t nwords);
@@ -56,15 +57,17 @@ void sparse_mul(uint64_t *o, const uint64_t *a1, const uint64_t *a2) {
      * Low copy: a2 verbatim (its bits above PARAM_N-1 are already zero).
      * High copy: a2 shifted up by PARAM_N bits, OR-ed in as two shift passes:
      *   B[sw + j]     |= a2[j] << sb
-     *   B[sw + j + 1] |= a2[j] >> (64 - sb) */
-    memset(B, 0, sizeof(B));
+     *   B[sw + j + 1] |= a2[j] >> (64 - sb)
+     * Only the words above the low copy need pre-zeroing for the OR passes; the
+     * first VEC_N_SIZE_64 words are fully overwritten by the memcpy below. */
     memcpy(B, a2, VEC_N_SIZE_64 * sizeof(uint64_t));
+    memset(&B[VEC_N_SIZE_64], 0, (SPARSE_B_WORDS - VEC_N_SIZE_64) * sizeof(uint64_t));
     sparse_rvv_or_shl(&B[sw],     a2, sb,        VEC_N_SIZE_64);
     sparse_rvv_or_shr(&B[sw + 1], a2, 64u - sb,  VEC_N_SIZE_64);
 
     /* Accumulate one cyclic rotation of a2 per set bit of a1, round-robined
-     * across SPARSE_NACC accumulators. */
-    memset(acc, 0, sizeof(acc));
+     * across SPARSE_NACC accumulators. The first write to each accumulator is a
+     * plain store (rotate_store), so the accumulators need no pre-zeroing. */
     unsigned t = 0;
     for (size_t w = 0; w < VEC_N_SIZE_64; w++) {
         uint64_t word = a1[w];
@@ -81,15 +84,26 @@ void sparse_mul(uint64_t *o, const uint64_t *a1, const uint64_t *a2) {
             unsigned bo = off & 63;
 
             uint64_t *dst = &acc[(t & (SPARSE_NACC - 1)) * VEC_N_SIZE_64];
-            sparse_rvv_rotate_xor(dst, &B[ws], bo, VEC_N_SIZE_64);
+            if (t < SPARSE_NACC) {
+                sparse_rvv_rotate_store(dst, &B[ws], bo, VEC_N_SIZE_64);
+            } else {
+                sparse_rvv_rotate_xor(dst, &B[ws], bo, VEC_N_SIZE_64);
+            }
             t++;
         }
     }
 
-    /* Merge the accumulators into o, then single-mask the reduction. */
-    memcpy(o, &acc[0], VEC_N_SIZE_64 * sizeof(uint64_t));
-    for (unsigned k = 1; k < SPARSE_NACC; k++) {
-        sparse_rvv_xor(o, &acc[k * VEC_N_SIZE_64], VEC_N_SIZE_64);
+    /* Merge the touched accumulators into o, then single-mask the reduction.
+     * Only the first min(t, SPARSE_NACC) accumulators were initialized above;
+     * a zero-weight a1 (t == 0) leaves the product zero. */
+    unsigned ntouched = (t < SPARSE_NACC) ? t : SPARSE_NACC;
+    if (ntouched == 0) {
+        memset(o, 0, VEC_N_SIZE_64 * sizeof(uint64_t));
+    } else {
+        memcpy(o, &acc[0], VEC_N_SIZE_64 * sizeof(uint64_t));
+        for (unsigned k = 1; k < ntouched; k++) {
+            sparse_rvv_xor(o, &acc[k * VEC_N_SIZE_64], VEC_N_SIZE_64);
+        }
     }
     o[VEC_N_SIZE_64 - 1] &= BITMASK(PARAM_N, 64);
 }
