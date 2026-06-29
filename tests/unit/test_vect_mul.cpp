@@ -2,7 +2,7 @@
 #include <cstdint>
 #include <cstring>
 
-#ifdef HQC_X86_IMPL
+#ifdef AVX2_MODE
 #include <immintrin.h>
 #endif
 
@@ -48,7 +48,7 @@ static void set_bit(uint64_t *v, size_t bit) {
     v[word] |= (1ULL << bitpos);
 }
 
-#ifdef HQC_X86_IMPL
+#ifdef AVX2_MODE
 #define VEC_N_256_SIZE_VEC (VEC_N_256_SIZE_64 / 4)
 
 static void pack_to_avx2(__m256i *out, const uint64_t *in) {
@@ -68,7 +68,7 @@ static int ntl_check_vect_mul(const uint64_t *a, const uint64_t *b) {
     uint64_t got[VEC_N_SIZE_64] = {0};
     uint64_t expected[VEC_N_SIZE_64] = {0};
 
-#ifdef HQC_X86_IMPL
+#ifdef AVX2_MODE
     __m256i a256[VEC_N_256_SIZE_VEC];
     __m256i b256[VEC_N_256_SIZE_VEC];
     __m256i o256[VEC_N_256_SIZE_VEC];

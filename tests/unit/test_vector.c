@@ -29,7 +29,7 @@
 
 #define VEC_N_256_NUM_WORDS (VEC_N_256_SIZE_64 >> 2)
 
-#if defined(HQC_X86_IMPL)
+#if defined(AVX2_MODE)
 #include <immintrin.h>
 #endif
 
@@ -135,7 +135,7 @@ static MunitResult test_vect_compare_fuzz(const MunitParameter params[], void *d
     return MUNIT_OK;
 }
 
-#ifndef HQC_X86_IMPL
+#ifndef AVX2_MODE
 
 /**
  * @brief Reference backend: vect_sample_fixed_weight1 yields weight PARAM_OMEGA.
@@ -181,9 +181,9 @@ static MunitResult test_vect_fixed_weight_ref_omegar(const MunitParameter params
     return MUNIT_OK;
 }
 
-#endif /* !HQC_X86_IMPL */
+#endif /* !AVX2_MODE */
 
-#ifdef HQC_X86_IMPL
+#ifdef AVX2_MODE
 
 /**
  * @brief AVX2 backend: vect_sample_fixed_weight1 yields weight PARAM_OMEGA.
@@ -240,7 +240,7 @@ static MunitResult test_vect_fixed_weight_avx2_omegar(const MunitParameter param
     return MUNIT_OK;
 }
 
-#endif /* HQC_X86_IMPL */
+#endif /* AVX2_MODE */
 
 /**
  * @brief Local copy of reference vect_generate_random_support1().
@@ -429,7 +429,7 @@ static MunitResult test_vect_truncate(const MunitParameter params[], void *data)
     const size_t rem_bits = (PARAM_N1N2 % 64u);
 
     /* Storage size used by the current backend (ref vs x86 padded) */
-#if defined(HQC_X86_IMPL)
+#if defined(AVX2_MODE)
     const size_t arr_words = VEC_N_256_SIZE_64;
 #else
     const size_t arr_words = VEC_N_SIZE_64;
@@ -489,12 +489,12 @@ MunitTest vector_tests[] = {
     /* barrett_reduce */
     MUNIT_TEST_ENTRY("barrett_reduce", test_barrett_reduce),
 
-#ifndef HQC_X86_IMPL
+#ifndef AVX2_MODE
     /* Reference fixed-weight sampling */
     MUNIT_TEST_ENTRY("vect PARAM_OMEGA", test_vect_fixed_weight_ref_omega),
     MUNIT_TEST_ENTRY("vect PARAM_OMEGA_R", test_vect_fixed_weight_ref_omegar),
 #endif
-#ifdef HQC_X86_IMPL
+#ifdef AVX2_MODE
     /* AVX2 fixed-weight sampling */
     MUNIT_TEST_ENTRY("vect PARAM_OMEGA", test_vect_fixed_weight_avx2_omega),
     MUNIT_TEST_ENTRY("vect PARAM_OMEGA_R", test_vect_fixed_weight_avx2_omegar),
